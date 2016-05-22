@@ -2,8 +2,6 @@
 -- 
 -- Base sur ESP8266
 
-
---dofile("util.lc")
 _dofile("params")
 
 print("******************************")

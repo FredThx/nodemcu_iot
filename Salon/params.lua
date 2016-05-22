@@ -27,7 +27,7 @@ PIN_433 = 3
 groupePrises = "00010"
 priseA = "10000"
 
--- dsiplay en i2c
+-- display en i2c
 pin_sda = 5 
 pin_scl = 6 
 disp_sla = 0x3c

@@ -11,6 +11,10 @@ DTH_pin = 4
 
 -- AUTREs
 FAN_RELAY_PIN = 3
+------------------------------
+-- Modules a charger
+------------------------------
+modules={"DTH_reader"}
 
 ------------------
 -- Params WIFI 
