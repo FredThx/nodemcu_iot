@@ -13,7 +13,7 @@ for topic in pairs(mqtt_out_topics) do
                         rep,
                         mqtt_out_topics[topic]["qos"],
                         mqtt_out_topics[topic]["retain"],
-                        mqtt_out_topics[topic]["callback"]
+                        mqtt_out_topics[topic]["callback"] --
                         )
             else
                 print("MQTT not send.")
@@ -24,6 +24,6 @@ end
 -- deamons systems : pour executer du code via MQTT
 if mqtt_base_topic then
     mqtt_in_topics[mqtt_base_topic.."_LUA"]= function(data)
-                    node.input(data)
+                   node.input(data)
                 end
 end

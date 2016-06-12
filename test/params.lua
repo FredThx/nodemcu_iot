@@ -17,8 +17,8 @@
 LOGGER = false
 
 -- Module MCP3008 pour entree analogiques
-mcp = _dofile("mcp3008")
-mcp.init(7,6,8,5)
+--mcp = _dofile("mcp3008")
+--mcp.init(7,6,8,5)
 -- Capteur DTH11-22
 DTH_pin = 4
 -- Capteur température DSx20
@@ -38,7 +38,7 @@ modules={"DTH_reader","ds1820_reader"}
 ------------------
 SSID = {"WIFI_THOME1",'WIFI_THOME2'}
 PASSWORD = "plus33324333562"
-HOST = "NODE-EXTERIEUR"
+HOST = "NODE-TEST"
 wifi_time_retry = 10 -- minutes
 
 --------------------
@@ -49,44 +49,29 @@ mqtt_port = 1883
 mqtt_user = "fredthx"
 mqtt_pass = "GaZoBu"
 mqtt_client_name = HOST
-mqtt_base_topic = "T-HOME/EXTERIEUR/"
+mqtt_base_topic = "T-HOME/TEST/"
 
 -- Messages MQTT sortants
-mesure_period = 10*60 * 1000
+mesure_period = 1*60 * 1000
 mqtt_out_topics = {}
-mqtt_out_topics[mqtt_base_topic.."humidite_terre"]={
-                message = function()
-                        return (1023 - mcp.read(0))/1023
-                    end,
-                qos = 0, retain = 0, callback = nil, manual = true}
-mqtt_out_topics[mqtt_base_topic.."luminosite"]={
-                message = function()
-                        return mcp.read(1)
-                    end,
-                qos = 0, retain = 0, callback = nil, manual = true}
-mqtt_out_topics[mqtt_base_topic.."pluie"]={
-                message = function()
-                        return (1023-mcp.read(2))/1023
-                    end,
-                qos = 0, retain = 0, callback = nil, manual = true}
 mqtt_out_topics[mqtt_base_topic.."temperature"]={
                 message = function()
                         t,h=readDht()    
                         return t
                     end,
-                qos = 0, retain = 0, callback = nil, manual = true}
+                qos = 0, retain = 0, callback = nil}
 mqtt_out_topics[mqtt_base_topic.."humidite"]={
                 message = function()
                         t,h=readDht()
                         return h
                     end,
-                qos = 0, retain = 0, callback = nil, manual = true}
-mqtt_out_topics["T-HOME/PISCINE/temperature"]={
+                qos = 0, retain = 0, callback = nil}
+mqtt_out_topics[mqtt_base_topic.."test"]={
                 message = function()
-                        t = readDSSensors("piscine")
+                        t = "test"
                         return t
                     end,
-                qos = 0, retain = 0, callback = nil, manual = true}
+                qos = 0, retain = 0, callback = nil}
 -- Messages MQTT sortants sur test
 test_period = 1000
 mqtt_test_topics = {}

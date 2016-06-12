@@ -34,6 +34,8 @@ end
 -- si un nom specifie (renseigne dans la table sensors), renvoie la temperature
 function readDSSensors(sensor_name)
     --Chargement du module en mémoire
+    ds18b20 = nil
+    package.loaded["ds18b20"]=nil
     require("ds18b20")
     ds18b20.setup(DS1820_PIN)
 	local reponse = {}
@@ -55,7 +57,7 @@ function readDSSensors(sensor_name)
 	if (sensor_name==nil) then
 		return reponse
 	else
-		return reponse[sensor_name]
+		return reponse[sensor_name]--
 	end
 end
 

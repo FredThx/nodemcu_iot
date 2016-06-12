@@ -9,6 +9,7 @@ for topic, action in pairs(mqtt_out_topics) do
                                 action.retain,
                                 action.callback)
             tmr.delay(1000000)
+            collectgarbage()
         else
             print("MQTT not send.")
         end
