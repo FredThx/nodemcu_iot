@@ -16,12 +16,11 @@ LOGGER = false
 -- PARAMETRES CAPTEURS - ACTIONEURS
 --------------------------------------
 
--- display en i2c
+-- display et grove gesture en i2c
 pin_sda = 5 
 pin_scl = 6 
 
---Gestes
-GEST_TOPIC = "T-HOME/CROQ/GESTE"
+
 
 --------------------------------------
 -- Modules a charger
@@ -44,6 +43,10 @@ mqtt_port = 1883
 mqtt_user = "fredthx"
 mqtt_pass = "GaZoBu"
 mqtt_client_name = HOST
+
+--Gestes
+GEST_TOPIC = "T-HOME/CROQ/GESTE"
+
 ----------------------------------------
 -- Messages MQTT sortants
 ---------------------------------------- 
