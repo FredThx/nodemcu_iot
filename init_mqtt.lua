@@ -1,9 +1,9 @@
 -- Initialisation MQTT
 
 mqtt_client = mqtt.Client(mqtt_client_name, 120, mqtt_user, mqtt_pass)
-mqtt_connected = false
+--mqtt_connected = false
 -- on connect / close
-mqtt_client:on("connect", function(con) print ("MQTT connected") end)
+--mqtt_client:on("connect", function(con) print ("MQTT connected") end)
 -- on close connection, keep alive connection
 mqtt_client:on("offline", function(con) 
     print ("MQTT offline")
@@ -46,5 +46,5 @@ function mqtt_connect()
 end
 
 mqtt_connect()
-
+print('Init_mqtt : ok')
                 

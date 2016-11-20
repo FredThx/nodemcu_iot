@@ -1,8 +1,9 @@
 -- MCP3008 module
 --
 -- usage :
---  mcp = dofile('mcp3008.lua")
+--  mcp = dofile('mcp3008.lua')
 --  mcp.init(6,7,5,8) or mcp.init() to use default
+--  mcp.init = nil -- to free memory
 --  chanel = 1 -- (0-7)
 --  val = mcp.read(chanel)
 --
@@ -24,11 +25,11 @@ do
         gpio.mode(CLK, gpio.OUTPUT)
         gpio.mode(MOSI, gpio.OUTPUT)
         gpio.mode(MISO, gpio.INPUT)
-        print("MCP3008 initialised with SPI configuration :")
-        print("    MISO : ".. MISO)
-        print("    MOSI : ".. MOSI)
-        print("    CLK : ".. CLK)
-        print("    CS : ".. CS)
+        print("MCP3008 initialised.")
+        --print("    MISO : ".. MISO)
+        --print("    MOSI : ".. MOSI)
+        --print("    CLK : ".. CLK)
+        --print("    CS : ".. CS)
     end
     
     -- Function to read MCP3008

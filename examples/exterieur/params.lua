@@ -11,14 +11,18 @@
 --                    - sonde pluie
 --                    - sonde luminosité
 --                    - sonde température
--- TODO : tester ajout un relay pour piloter pompe
+--                    - relay pour piloter pompe
 -------------------------------------------------
-
+-- Modules nécessaires dans le firmware :
+--    file, gpio, net, node,tmr, uart, wifi
+--    bit, dth, mqtt, ow
+-------------------------------------------------
 LOGGER = false
 
 -- Module MCP3008 pour entree analogiques
 mcp = _dofile("mcp3008")
 mcp.init(7,6,8,5)
+mcp.init = nil -- 952 bytes released
 -- Capteur DTH11-22
 DTH_pin = 4
 -- Capteur température DSx20
@@ -28,7 +32,15 @@ sensors = {
 }
 -- Relay pompe
 POMPE_PIN = 2
-
+-- Capteur Niveau d'eau
+NIVEAU_PIN = 1
+f_niveau = function(level)
+                    if level == gpio.LOW then 
+                        return "BAS" 
+                    else
+                        return "HAUT"
+                    end
+                end
 ------------------------------
 -- Modules a charger
 ------------------------------
@@ -58,41 +70,60 @@ mqtt_out_topics[mqtt_base_topic.."humidite_terre"]={
                 message = function()
                         return (1023 - mcp.read(0))/1023
                     end,
-                qos = 0, retain = 0, callback = nil, manual = true}
+                --qos = 0, retain = 0, callback = nil, 
+                manual = true}
 mqtt_out_topics[mqtt_base_topic.."luminosite"]={
                 message = function()
                         return mcp.read(1)
                     end,
-                qos = 0, retain = 0, callback = nil, manual = true}
+                --qos = 0, retain = 0, callback = nil, 
+                manual = true}
 mqtt_out_topics[mqtt_base_topic.."pluie"]={
                 message = function()
                         return (1023-mcp.read(2))/1023
                     end,
-                qos = 0, retain = 0, callback = nil, manual = true}
+                --qos = 0, retain = 0, callback = nil, 
+                manual = true}
 mqtt_out_topics[mqtt_base_topic.."temperature"]={
                 message = function()
-                        t,h=readDht()    
+                        local t,h=readDht()    
                         return t
                     end,
-                qos = 0, retain = 0, callback = nil, manual = true}
+                --qos = 0, retain = 0, callback = nil, 
+                manual = true}
 mqtt_out_topics[mqtt_base_topic.."humidite"]={
                 message = function()
-                        t,h=readDht()
+                        local t,h=readDht()
                         return h
                     end,
-                qos = 0, retain = 0, callback = nil, manual = true}
+                --qos = 0, retain = 0, callback = nil, 
+                manual = true}
 mqtt_out_topics["T-HOME/PISCINE/temperature"]={
                 message = function()
-                        t = readDSSensors("piscine")
-                        return t
+                        return readDSSensors("piscine")
                     end,
-                qos = 0, retain = 0, callback = nil, manual = true}
+                --qos = 0, retain = 0, callback = nil, 
+                manual = true}
+mqtt_out_topics["T-HOME/PISCINE/niveau"]={
+                message = function()
+                        return f_niveau(gpio.read(NIVEAU_PIN))
+                    end,
+                --qos = 0, retain = 0, callback = nil, 
+                manual = true}
+                       
 -- Messages MQTT sortants sur test
 test_period = 1000
 mqtt_test_topics = {}
                
 -- Messages sur trigger GPIO
-mqtt_trig_topics = {}                
+mqtt_trig_topics = {}     
+mqtt_trig_topics["T-HOME/PISCINE/niveau"]={
+            pin = NIVEAU_PIN,
+            pullup = false,
+            type = "both",
+            message = f_niveau--,
+            --qos = 0, retain = 0, callback = nil
+}
 -- Actions sur messages MQTT entrants
 mqtt_in_topics = {}
 mqtt_in_topics["T-HOME/PISCINE/pompe"]={
@@ -104,6 +135,6 @@ mqtt_in_topics["T-HOME/PISCINE/pompe"]={
                         print("POMPE OFF")
                         gpio.write(POMPE_PIN, gpio.LOW)
                     end}
-
+                        
 --Gestion du display : mqtt(json)=>affichage
 disp_texts = {}

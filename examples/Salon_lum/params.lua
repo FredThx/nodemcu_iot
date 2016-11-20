@@ -19,7 +19,7 @@ modules={}
 ------------------
 -- Params WIFI 
 ------------------
-SSID = {"WIFI_THOME1",'WIFI_THOME2'}
+SSID = {"WIFI_THOME1","WIFI_THOME2"}
 PASSWORD = "plus33324333562"
 HOST = "NODE-SALON-LUM"
 wifi_time_retry = 10 -- minutes

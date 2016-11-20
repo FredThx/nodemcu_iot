@@ -9,7 +9,24 @@
 --				mise en place du deamon de rafraichissement (alarm)
 --
 -------------------------------------------------
-
+--  Utilisation :
+--              pin_sda = 5 
+--              pin_scl = 6 
+--              disp_sla = 0x3c
+--              _dofile("i2c_display")
+--              disp_add_data(texte)
+--          avec texte un json du type
+--          texte = '{ "id": "id_du_texte",
+--                     "column": [0-20],    (si omis : 0)
+--                     "row": [0-5],        (si omis : 0)
+--                     "text": "abcdef",      (si omis : "")
+--                     "angle": [0,90,180,270] }'     (si omis 0°)
+--
+--          disp_add_data('{"id":"id_du_texte"}') efface le texte
+-------------------------------------------------
+-- Modules nécessaires dans le firmware :
+--    i2c, u8g(avec font ssd1306_128x64_i2c), cjson
+-------------------------------------------------
 
 i2c.setup(0, pin_sda, pin_scl, i2c.SLOW)
 disp = u8g.ssd1306_128x64_i2c(disp_sla)
@@ -21,7 +38,7 @@ disp:setFontPosTop()
 
 -- rafaichissement du display
 function update_display()
-    i2c.setup(0, disp_sda, disp_scl, i2c.SLOW) -- pour pas que ça déconne??
+    i2c.setup(0, pin_sda, pin_scl, i2c.SLOW) -- pour pas que ça déconne??
     disp:firstPage()
     repeat
         draw_background()
@@ -41,15 +58,22 @@ end
 -- Dessin des text qui viendront par mqtt
 function draw_texts()
     for k, text in pairs(disp_texts) do
-        disp:drawStr(text.column*6 , text.row*10+2, text.text)
+        local column = (text.column or 0)*6
+        local row = (text.row or 0)*10+2
+        local text = text.text or ""
+        if text.angle==90 then
+            disp:drawStr90(column, row, text)
+        elseif text.angle==180 then
+            disp:drawStr180(column, row, text)
+        elseif text.angle==270 then
+            disp:drawStr270(column, row, text)
+        else
+            disp:drawStr(column, row, text)
+        end
     end
 end
 
-tmr.alarm(5,500, tmr.ALARM_AUTO, update_display)
-
---Exemples de texts :
---disp_texts["humidite"]={column=1, row=2, text="hum : 70%"}
---disp_texts["heure"]={column=1, row=3, text="12:45", id="heure"}
+tmr.alarm(0,500, tmr.ALARM_AUTO, update_display)
 
 function disp_add_data(data)
     local t_data=cjson.decode(data)

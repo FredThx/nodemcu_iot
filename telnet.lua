@@ -1,5 +1,7 @@
  --lancement du serveur telnet
-s=net.createServer(net.TCP,180) 
+if not s then
+    s=net.createServer(net.TCP,180) 
+end
 s:listen(2323,function(c) 
     function s_output(str) 
       if(c~=nil) 
@@ -23,3 +25,4 @@ s:listen(2323,function(c)
     end) 
     print("Welcome to " .. HOST)
 end)
+print('Telnet Server : created.')

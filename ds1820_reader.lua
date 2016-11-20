@@ -39,6 +39,7 @@ function readDSSensors(sensor_name)
     require("ds18b20")
     ds18b20.setup(DS1820_PIN)
 	local reponse = {}
+    local sensor_name_found,i
 	for key, addr in pairs(ds18b20.addrs()) do
 		sensor_name_found = sensors[addr] -- 
 		if (sensor_name_found == nil) then 

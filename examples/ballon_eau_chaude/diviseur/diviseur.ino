@@ -10,8 +10,8 @@ by FredThx
 */ 
 
 int N = 330;
-int pinIn = 8;
-int pinOut = 2;
+int pinIn = 0;
+int pinOut = 1;
 
 
 double sum = 0;

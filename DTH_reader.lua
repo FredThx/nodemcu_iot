@@ -1,6 +1,7 @@
 --local dht= require 'dht'
 function readDht()    
-    status,temp,humi,temp_decimial,humi_decimial = dht.read(DTH_pin)
+    --local status,temp,humi,temp_decimial,humi_decimial = dht.read(DTH_pin)
+    local status,temp,humi = dht.read(DTH_pin)
     if( status == dht.OK ) then
         print("DHT Temperature : "..temp.." - ".."Humidite : "..humi)
         return temp,humi

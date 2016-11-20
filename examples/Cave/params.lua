@@ -19,7 +19,7 @@ modules={"DTH_reader"}
 ------------------
 -- Params WIFI 
 ------------------
-SSID = "WIFI_THOME1"
+SSID = {"WIFI_THOME1","WIFI_THOME2"}
 PASSWORD = "plus33324333562"
 HOST = "NODE-CAVE"
 wifi_time_retry = 10 -- minutes
@@ -51,4 +51,13 @@ mqtt_out_topics[mqtt_base_topic.."humidite"]={
                 qos = 0, retain = 0, callback = nil}
 -- Actions sur messages MQTT entrants
 mqtt_in_topics = {}
-
+-- Messages MQTT sortants sur test
+test_period = 1000
+mqtt_test_topics = {}
+-- Messages sur trigger GPIO
+mqtt_trig_topics = {}
+--Gestion du display : mqtt(json)=>affichage
+disp_texts = {}
+--mqtt_in_topics[mqtt_base_topic.."DISPLAY"]=function(data)
+--                disp_add_data(data)
+--            end

@@ -1,7 +1,16 @@
 -- projet Standart NodeMCU & MQTT
 -- 
 -- Base sur ESP8266
-
+----------------------------------------------------
+-- Utilisation des alarmes :
+--  0   :   i2c display
+--  1   :   wait_for_wifi_conn
+--  2   :   test wifi
+--  3   :   mqtt_connect()
+--  4   :   _dofile("read_and_send")
+--  5   :   _dofile("test_and_send")
+--  6   :   libre pour le projet (ex : blink leb)
+---------------------------------------------------
 _dofile("params")
 
 print("******************************")
@@ -15,6 +24,10 @@ if LOGGER then
     print("----- NODE RESTART -----")
 end
 
+if WATCHDOG then
+    tmr.softwd(WATCHDOG_TIMEOUT or 3600)
+end
+
 _dofile("add_reverse_topics")
 for key, reader in pairs(modules) do
     print("Load " .. reader)
@@ -22,7 +35,9 @@ for key, reader in pairs(modules) do
 end
 
 function on_wifi_connected()
-    _dofile("telnet")
+    if TELNET then
+        _dofile("telnet")
+    end
     _dofile("init_mqtt")
     _dofile("init_trig")
     -- Solution hybernation (economie energie):
@@ -31,15 +46,19 @@ function on_wifi_connected()
     --    node.dsleep(mesure_period*1000)
     --    end)
     -- Solution alarme (reste eveille et connecte. Telnet possible):
-    tmr.alarm(4, mesure_period, 1, function () 
-            _dofile("read_and_send")
-            if LOGGER then
-                check_logfile_size()
-            end
-        end)
-    tmr.alarm(5,test_period, 1, function()
-            _dofile("test_and_send")
-        end)
+    if mesure_period then
+        tmr.alarm(4, mesure_period, 1, function () 
+                _dofile("read_and_send")
+                if LOGGER then
+                    check_logfile_size()
+                end
+            end)
+    end
+    if test_periode then
+        tmr.alarm(5,test_period, 1, function()
+                _dofile("test_and_send")
+            end)
+    end
 end
 
 _dofile("wifi")
