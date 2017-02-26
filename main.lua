@@ -47,15 +47,15 @@ function on_wifi_connected()
     --    end)
     -- Solution alarme (reste eveille et connecte. Telnet possible):
     if mesure_period then
-        tmr.alarm(4, mesure_period, 1, function () 
+        tmr.alarm(4, mesure_period, tmr.ALARM_AUTO, function () 
                 _dofile("read_and_send")
                 if LOGGER then
                     check_logfile_size()
                 end
             end)
     end
-    if test_periode then
-        tmr.alarm(5,test_period, 1, function()
+    if test_period then
+        tmr.alarm(5,test_period, tmr.ALARM_AUTO, function()
                 _dofile("test_and_send")
             end)
     end

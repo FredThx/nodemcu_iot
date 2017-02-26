@@ -1,9 +1,13 @@
-
-
 -- Lecture des capteurs & envoie données via mqtt
 for topic, action in pairs(mqtt_out_topics) do
     if not action.manual then
-        local no_err, rep = pcall(action.message)
+        local no_err, rep
+        if type(action.message)=="function" then
+            no_err, rep = pcall(action.message)
+        else
+            no_err = true
+            rep = action.message
+        end
         print(topic, ":" , rep)
         if no_err and rep then
             if mqtt_client:publish(topic,rep,

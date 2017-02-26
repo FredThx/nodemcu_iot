@@ -21,6 +21,29 @@ for topic in pairs(mqtt_out_topics) do
             end
         end}
     print("Reverse topic "..topic.."_".." created.")
+    -- Add deamons on_change
+    if mqtt_out_topics[topic]["on_change"] then
+        mqtt_out_topics[topic]["on_change_value"]=nil
+        mqtt_test_topics[topic]={{
+                test = function()
+                            local no_err, value = pcall(mqtt_out_topics[topic].message)
+                            if no_err and value ~= mqtt_out_topics[topic].on_change_value then
+                                mqtt_out_topics[topic].on_change_value = value
+                                return true
+                            else
+                                return false
+                            end
+                        end,
+                    value = function()
+                                local no_err, value = pcall(mqtt_out_topics[topic].message)
+                                if no_err then
+                                    return value
+                                end
+                        end,
+                    mqtt_repeat = false,
+                    qos = 0, retain = 0, callback = nil}}
+        print("Test topic "..topic.."_".." created.")
+     end
 end
 
 -- deamons systems : pour executer du code via MQTT

@@ -7,11 +7,10 @@
 --                      priseA
 -- (voir parames.lua)
 
+
 -- Constantes
 pulseLenght = 300
 nb_repeat = 10
-on = "10"
-off = "01"
 
 -- Initialisation
 gpio.mode(PIN_433, gpio.OUTPUT)
@@ -32,20 +31,18 @@ function transmit433(bits)
             table.insert(msg,pulseLenght)
             table.insert(msg,pulseLenght*3)
             table.insert(msg,pulseLenght*3)
-            table.insert(msg,pulseLenght)        
+            table.insert(msg,pulseLenght)     
+        -- pour utilisation floating bit
+        --else
+        --   table.insert(msg,pulseLenght*3)
+        --    table.insert(msg,pulseLenght)
+        --    table.insert(msg,pulseLenght*3)
+        --    table.insert(msg,pulseLenght)     
         end
     end
-    --la trame de fin
+    --la trame de fin : Sync. bit
     table.insert(msg,pulseLenght)
     table.insert(msg,pulseLenght*31)
     -- Envoie du signal
     gpio.serout(PIN_433, gpio.HIGH, msg, nb_repeat)
 end
-
---function set433Switch(group_id, switch_id, on_off)
---    if on_off then
---        transmit433(group_id..switch_id..on)
---    else
---        transmit433(group_id..switch_id..off)
---    end
---end
