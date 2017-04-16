@@ -32,7 +32,7 @@ gpio.write(LED_PIN, gpio.LOW)
 -- Capteur température DSx20
 DS1820_PIN = 4 
 sensors = { 
-    [string.char(16,202,160,164,2,8,0,6)] = "salon"
+    [string.char(40,11,234,46,6,0,0,53)] = "salon"
 }
 
 -- prises Radio frequence 433Mhz
@@ -44,6 +44,7 @@ priseA = "10000"
 pin_sda = 5 
 pin_scl = 6 
 disp_sla = 0x3c
+
 --------------------------------------
 -- Modules a charger
 --------------------------------------
@@ -65,7 +66,8 @@ wifi_time_retry = 10 -- minutes
 -- Params MQTT
 ----------------------------------------
 --mqtt_host = "31.29.97.206"
-mqtt_host = "192.168.0.16"
+mqtt_host = "192.168.0.15"
+--mqtt_host = "192.168.10.155"
 mqtt_port = 1883
 mqtt_user = "fredthx"
 mqtt_pass = "GaZoBu"

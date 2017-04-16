@@ -8,6 +8,10 @@ Copy all files in the nodemcu device.
 run compile.lua
 restart the device
 
+Examples :
+---------
+
+all examples are used in my homes
 
 Tutorials :
 ---------

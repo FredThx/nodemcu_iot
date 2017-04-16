@@ -58,7 +58,7 @@ wifi_time_retry = 10 -- minutes
 -- Params MQTT
 --------------------
 --mqtt_host = "31.29.97.206"
-mqtt_host = "192.168.0.16"
+mqtt_host = "192.168.0.15"
 mqtt_port = 1883
 mqtt_user = "fredthx"
 mqtt_pass = "GaZoBu"

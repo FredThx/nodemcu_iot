@@ -7,6 +7,8 @@ mqtt_client = mqtt.Client(mqtt_client_name, 120, mqtt_user, mqtt_pass)
 -- on close connection, keep alive connection
 mqtt_client:on("offline", function(con) 
     print ("MQTT offline")
+    --todo : stop the triggers
+    tmr.stop(4)
     mqtt_connected = false
     mqtt_connect()
     end)
@@ -39,6 +41,20 @@ function mqtt_connect()
                         for topic in pairs(mqtt_in_topics) do
                             mqtt_client:subscribe(topic,1)
                             print(topic .." : subscribed")
+                        end
+                        _dofile("init_trig")
+                        if mesure_period then
+                            tmr.alarm(4, mesure_period, tmr.ALARM_AUTO, function () 
+                                    _dofile("read_and_send")
+                                    if LOGGER then
+                                        check_logfile_size()
+                                    end
+                                end)
+                        end
+                        if test_period then
+                            tmr.alarm(5,test_period, tmr.ALARM_AUTO, function()
+                                    _dofile("test_and_send")
+                                end)
                         end
                     end)
             end

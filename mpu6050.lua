@@ -1,13 +1,13 @@
 -- MPU_6050 module
 -- Accelerometre + gyroscope + thermometre
 -- usage :
---  mpu6050 = dofile('mpu_6050.lua') or .lc if compiled
+--  mpu6050 = dofile('mpu_6050.lua') or .lc if compiled or _dofile(....)
 --  mpu6050.init(pin_sda, pin_scl [int_detection, int_duration])
 --      int_detection : 0 to 255 (0 : always, 1 is good)
 --  mpu6050.init = nil -- to free memory
 --  mpu6050.read() return a table with all values
 --
-
+-- modules necessaires : i2c, bit
 
 local M
 
@@ -25,10 +25,11 @@ do
     --Initialisation
     function init(pin_sda, pin_scl, int_detection, int_duration)
       i2c.setup(bus, pin_sda, pin_scl, i2c.SLOW)  
-      scan()  
-      print("Start device...")
-      write_reg_MPU(MPU_PWR_MGMT1,0)
-      scan()
+      scan()        
+      if bit.isset(read_reg_MPU(MPU_PWR_MGMT1),6) then
+        print("Start device...")
+        write_reg_MPU(MPU_PWR_MGMT1,0)
+      end
       if int_detection ~= nil then
         write_reg_MPU(MPU_MOT_THR,int_detection)
         write_reg_MPU(MPU_MOT_DUR,int_duration or 1)

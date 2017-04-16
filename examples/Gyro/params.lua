@@ -10,7 +10,7 @@
 -------------------------------------------------
 -- Modules nécessaires dans le firmware :
 --    file, gpio, net, node,tmr, uart, wifi
---    bit, mqtt, i2c, cjson
+--    mqtt, i2c, cjson, bit
 -------------------------------------------------
 
 LOGGER = false
@@ -36,15 +36,15 @@ modules={
 --------------------------------------
 -- Params WIFI 
 --------------------------------------
-SSID = {"WIFI_THOME1",'WIFI_THOME2'}
-PASSWORD = "plus33324333562"
+SSID = {"WIFI_GYRO","FILEUROPE-88","WIFI_THOME2"}
+PASSWORD = {"plus33324333562","57e03c13a246c9648c7a6889ef","plus33324333562"}
 HOST = "NODE-GYRO"
 wifi_time_retry = 10 -- minutes
 
 ----------------------------------------
 -- Params MQTT
 ----------------------------------------
-mqtt_host = "192.168.10.155"
+mqtt_host = "192.168.7.17"
 mqtt_port = 1883
 mqtt_user = "fredthx"
 mqtt_pass = "GaZoBu"
