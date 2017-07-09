@@ -1,16 +1,22 @@
-------------------
--- PARAMETRES CAPTEURS - ACTIONEURS
-------------------
-
--- Capteur température DSx20
-DS1820_PIN = 4 
-sensors = { }
+-------------------------------------------------
+--  Projet : des IOT a base de nodemcu (ESP8266)
+--           qui communiquent en MQTT
+-------------------------------------------------
+--  Auteur : FredThx  
+-------------------------------------------------
+--  Ce fichier : paramètres pour nodemcu
+--               avec
+--                  - capteur de température et humidité DHT11
+-------------------------------------------------
+-- Modules nécessaires dans le firmware :
+--    file, gpio, net, node,tmr, uart, wifi
+--    bit, mqtt, dht
+-------------------------------------------------
+-----------------
 
 -- Capteur DTH11-22
 DTH_pin = 4
 
--- AUTREs
-FAN_RELAY_PIN = 3
 ------------------------------
 -- Modules a charger
 ------------------------------
@@ -56,8 +62,4 @@ test_period = 1000
 mqtt_test_topics = {}
 -- Messages sur trigger GPIO
 mqtt_trig_topics = {}
---Gestion du display : mqtt(json)=>affichage
 disp_texts = {}
---mqtt_in_topics[mqtt_base_topic.."DISPLAY"]=function(data)
---                disp_add_data(data)
---            end
