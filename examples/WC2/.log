@@ -1,0 +1,29 @@
+2017-04-16 17:41:14,549 - INFO - my_logging logger is started. Console : DEBUG. File (.log) : DEBUG at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:104
+2017-04-16 17:41:14,552 - INFO - Lecture des données at wc.py ,line n°:80
+2017-04-16 17:41:14,562 - INFO - 0 mesures trouvées. at wc.py ,line n°:87
+2017-04-16 17:42:31,352 - ERROR -   File "<stdin>", line 1, in <module>
+ at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:183
+2017-04-16 17:42:31,355 - ERROR - <type 'exceptions.TypeError'> - object of type 'Cursor' has no len() at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:184
+2017-04-16 17:42:38,059 - ERROR -   File "<stdin>", line 1, in <module>
+  File "C:\Python27\lib\site-packages\pymongo\cursor.py", line 570, in __getitem__
+    raise IndexError("no such item for Cursor instance")
+ at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:183
+2017-04-16 17:42:38,059 - ERROR - <type 'exceptions.IndexError'> - no such item for Cursor instance at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:184
+2017-04-16 17:47:04,592 - ERROR -  at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:183
+2017-04-16 17:47:04,594 - ERROR - <type 'exceptions.SyntaxError'> - invalid syntax (<stdin>, line 1) at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:184
+2017-04-16 17:48:36,200 - ERROR -   File "C:\Python27\lib\encodings\cp850.py", line 14, in decode
+    def decode(self,input,errors='strict'):
+ at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:183
+2017-04-16 17:48:36,201 - ERROR - <type 'exceptions.KeyboardInterrupt'> -  at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:184
+2017-04-16 17:48:39,289 - ERROR -   File "C:\Python27\lib\encodings\cp850.py", line 14, in decode
+    def decode(self,input,errors='strict'):
+ at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:183
+2017-04-16 17:48:39,289 - ERROR - <type 'exceptions.KeyboardInterrupt'> -  at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:184
+2017-04-16 17:48:42,263 - ERROR -  at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:183
+2017-04-16 17:48:42,266 - ERROR - <type 'exceptions.SyntaxError'> - invalid syntax (<stdin>, line 1) at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:184
+2017-04-16 17:48:44,079 - ERROR -  at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:183
+2017-04-16 17:48:44,092 - ERROR - <type 'exceptions.SyntaxError'> - invalid syntax (<stdin>, line 1) at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:184
+2017-04-16 17:48:47,841 - ERROR -   File "C:\Python27\lib\encodings\cp850.py", line 14, in decode
+    def decode(self,input,errors='strict'):
+ at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:183
+2017-04-16 17:48:47,842 - ERROR - <type 'exceptions.KeyboardInterrupt'> -  at build\bdist.win-amd64\egg\FUTIL\my_logging.py ,line n°:184

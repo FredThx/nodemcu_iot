@@ -7,6 +7,13 @@
 --  chanel = 1 -- (0-7)
 --  val = mcp.read(chanel)
 --
+
+-------------------------------------------------
+-- Modules nécessaires dans le firmware :
+--    gpio,tmr
+--    bit
+-------------------------------------------------
+
 local M
 do
     --default SPI pins

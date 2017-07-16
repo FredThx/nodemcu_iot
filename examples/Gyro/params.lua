@@ -24,7 +24,7 @@ TELNET = false
 -- MPU_6050
 
 mpu6050 = _dofile('mpu6050')
-mpu6050.init(6, 7, 1, 1)
+mpu6050.init(7, 6, 1, 1)
 mpu6050.init = nil
 
 --------------------------------------
@@ -36,8 +36,8 @@ modules={
 --------------------------------------
 -- Params WIFI 
 --------------------------------------
-SSID = {"WIFI_GYRO","FILEUROPE-88","WIFI_THOME2"}
-PASSWORD = {"plus33324333562","57e03c13a246c9648c7a6889ef","plus33324333562"}
+SSID = {"WIFI_GYRO","FILEUROPE"}
+PASSWORD = {"plus33324333562","vosges433"}
 HOST = "NODE-GYRO"
 wifi_time_retry = 10 -- minutes
 

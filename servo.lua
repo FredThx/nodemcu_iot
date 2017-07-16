@@ -15,7 +15,7 @@ do
             pwm.start(PIN)
         end
     local set_angle = function(angle)
-            if angle >= 0 and angle <= 156 then
+            if angle >= 0 and angle <= 200 then
                 pwm.setduty(PIN, 25+angle*5/9)
             end
         end

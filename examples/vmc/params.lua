@@ -26,6 +26,10 @@ WATCHDOG = true
 SERVO = _dofile('servo')
 SERVO.init(1)
 
+-- Relay pour piloter petite vitesse (LOW) et grande vitesse (HIGH)
+RELAY_PIN = 4
+gpio.mode(RELAY_PIN, gpio.OUTPUT)
+gpio.write(RELAY_PIN, gpio.LOW)
 ------------------------------
 -- Modules a charger
 ------------------------------
@@ -70,6 +74,17 @@ mqtt_in_topics[mqtt_base_topic.."WC"]={
             ["OFF"]=function()
                         SERVO.angle(0)
                     end}
+					
+mqtt_in_topics[mqtt_base_topic.."vitesse"]={
+            ["HIGH"]=function()
+                      print("Vitesse : HIGH.")
+                        gpio.write(RELAY_PIN,gpio.HIGH)
+                    end,
+            ["LOW"]=function()
+                        print("Vitesse : LOW.")
+                        gpio.write(RELAY_PIN,gpio.LOW)
+                    end}
+					
 -- Messages MQTT sortants sur test
 test_period = 500
 --test_etat_porte = false
