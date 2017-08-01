@@ -39,14 +39,6 @@ function on_wifi_connected()
         _dofile("telnet")
     end
     _dofile("init_mqtt")
-    -- _dofile("init_trig") : in init_mqtt.lua
-    -- Solution hybernation (economie energie):
-    -- mqtt_client:on("offline", function(con) 
-    --    print ("Hybernation...") 
-    --    node.dsleep(mesure_period*1000)
-    --    end)
-    -- Solution alarme (reste eveille et connecte. Telnet possible):
-
 end
 
 _dofile("wifi")

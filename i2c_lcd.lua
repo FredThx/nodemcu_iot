@@ -1,6 +1,41 @@
-i2c.setup(0, pin_sda, pin_scl, i2c.SLOW)
-lcd = dofile("lcd1602.lua")()
+-------------------------------------------------
+--  Projet : des IOT a base de nodemcu (ESP8266)
+--           qui communiquent en MQTT
+-------------------------------------------------
+--  Auteur : FredThx  
+-------------------------------------------------
+--  Ce fichier : 
+--              Utilisation d'un ecran LCD type 1602 en i2c
+--
+--              Initialisation de l ecran (en i2c)
+--              mise en place du deamon de rafraichissement (alarm)
+--
+-------------------------------------------------
+--  Utilisation :
+--              pin_sda = 5 
+--              pin_scl = 6 
+--              disp_sla = 0x3c
+--              _dofile("i2c_lcd")
+--              disp_add_data(texte)
+--          avec texte un json du type
+--          texte = '{ 
+--                     "column": [0-20],    (si omis : 0)
+--                     "row": [0-5],        (si omis : 0)
+--                     "text": "abcdef",      (si omis : "")
+--                      "clear":false|true      (si omis : false)
+--                      "led":false|true        
+--
+-------------------------------------------------
+-- Modules nécessaires dans le firmware :
+--    i2c, u8g(avec font ssd1306_128x64_i2c), cjson | sjson
+-------------------------------------------------
 
+i2c.setup(0, pin_sda, pin_scl, i2c.SLOW)
+
+-- ( cjson a été remplacé par sjson dans certains firmwares) ...
+if not _G.cjson then _G.cjson = sjson end
+
+lcd = dofile("lcd1602.lua")()
 disp_clear = lcd.clear
 
 function disp_add_data(data)

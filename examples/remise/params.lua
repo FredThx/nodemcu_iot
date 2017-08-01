@@ -7,15 +7,22 @@
 --  Ce fichier : paramètres pour nodemcu
 --               avec
 --					- capteurs de température DS18b20
---						- frigo
 --						- congélateur
---						- ambiance cuisine
+--						- buzzer
+--						- bouton poussoir
+--						- led
 -------------------------------------------------
+-- Modules nécessaires dans le firmware :
+--    file, gpio, net, node,tmr, uart, wifi
+--    bit, mqtt, ow
+-------------------------------------------------
+
+
 
 LOGGER = false
 WATCHDOG = true
 
-LED_PIN = 3
+LED_PIN = 8
 BUZZER_PIN = 1
 BT_PIN = 7
 gpio.mode(LED_PIN, gpio.OUTPUT)
@@ -27,24 +34,17 @@ gpio.mode(BT_PIN, gpio.INPUT)
 --------------------------------------
 
 -- Capteur température DSx20
-DS1820_PIN = 4 
+DS1820_PIN = 3
 sensors = { 
-    [string.char(40,255,74,144,81,20,0,250)] = "frigo",
-    --[string.char(40,255,143,78,80,20,0,181)] 
-    [string.char(40,255,158,90,160,22,3,204)]= "congelateur",
-    [string.char(40,255,50,226,80,20,0,173)] = "cuisine"--,
-    --[string.char(40,255,202,79,80,20,0,1)] = "test"
+    [string.char(40,255,202,79,80,20,0,1)] = "congelateur",
+	[string.char(40,126,36,46,6,0,0,198)] = "remise"
 }
 
 --------------------------------------
 -- Modules a charger
 --------------------------------------
 modules={
-	"ds1820_reader"--,
-	--"DTH_reader",
-    --"BMP_reader",
-    --"433_switch",
-    --"i2c_display"
+	"ds1820_reader"
 	}
 
 --------------------------------------
@@ -52,7 +52,7 @@ modules={
 --------------------------------------
 SSID = "WIFI_THOME2"
 PASSWORD = "plus33324333562"
-HOST = "NODE-CUISINE"
+HOST = "NODE-REMISE"
 wifi_time_retry = 10 -- minutes
 
 ----------------------------------------
@@ -63,33 +63,23 @@ mqtt_port = 1883
 mqtt_user = "fredthx"
 mqtt_pass = "GaZoBu"
 mqtt_client_name = HOST
-mqtt_base_topic = "T-HOME/CUISINE/"
+mqtt_base_topic = "T-HOME/REMISE/"
 ----------------------------------------
 -- Messages MQTT sortants
 ----------------------------------------
 mesure_period = 10*60 * 1000
 mqtt_out_topics = {}
-mqtt_out_topics[mqtt_base_topic.."REFRIGERATEUR/temperature"]={
-                message = function()
-                        t = readDSSensors("frigo")
-                        return t
-                    end,
-                qos = 0, retain = 0, callback = nil}
+
 mqtt_out_topics[mqtt_base_topic.."CONGELATEUR/temperature"]={
                 message = function()
                         t = readDSSensors("congelateur")
                         return t
                     end,
                 qos = 0, retain = 0, callback = nil}
-mqtt_out_topics[mqtt_base_topic.."TEST/temperature"]={
-                message = function()
-                        t = readDSSensors("test")
-                        return t
-                    end,
-                qos = 0, retain = 0, callback = nil}
+
 mqtt_out_topics[mqtt_base_topic.."temperature"]={
                 message = function()
-                        t = readDSSensors("cuisine")
+                        t = readDSSensors("remise")
                         return t
                     end,
                 qos = 0, retain = 0, callback = nil}
@@ -100,12 +90,10 @@ mqtt_trig_topics = {}
 mqtt_trig_topics[mqtt_base_topic.."BT"]={
                 pin = BT_PIN,
                 pullup = true,
-                type = "down", -- or "down", "both", "low", "high"
+                type = "down", 
                 qos = 0, retain = 0, callback = nil,
                 message = function()
                         print("Bt pushed")
-                        --mqtt_in_topics[mqtt_base_topic.."RELAIS"]["CHANGE"]()
-                        -- TODO : régler problème de déclenchement intempestif quand relais activé via WIFI
                         return 1
                     end
                 }    
