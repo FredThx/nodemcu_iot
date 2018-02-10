@@ -17,6 +17,8 @@ LOGGER = false
 WATCHDOG = true
 TELNET = false
 
+cjson = sjson
+
 --------------------------------------
 -- PARAMETRES CAPTEURS - ACTIONEURS
 --------------------------------------
@@ -27,6 +29,14 @@ mpu6050 = _dofile('mpu6050')
 mpu6050.init(7, 6, 1, 1)
 mpu6050.init = nil
 
+-- LED
+LED_pin = 3
+gpio.mode(LED_pin,gpio.OUTPUT)
+gpio.write(LED_pin,gpio.LOW)
+-- Bouton
+BT_pin = 4
+
+
 --------------------------------------
 -- Modules a charger
 --------------------------------------
@@ -36,20 +46,20 @@ modules={
 --------------------------------------
 -- Params WIFI 
 --------------------------------------
-SSID = {"WIFI_GYRO","FILEUROPE"}
-PASSWORD = {"plus33324333562","vosges433"}
-HOST = "NODE-GYRO"
+SSID = {"FILEUROPE_GYRO"}
+PASSWORD = {"vosges433"}
+HOST = "NODE-GYRO-2"
 wifi_time_retry = 10 -- minutes
 
 ----------------------------------------
 -- Params MQTT
 ----------------------------------------
-mqtt_host = "192.168.7.17"
+mqtt_host = "10.3.141.1"
 mqtt_port = 1883
-mqtt_user = "fredthx"
-mqtt_pass = "GaZoBu"
+mqtt_user = ""
+mqtt_pass = ""
 mqtt_client_name = HOST
-mqtt_base_topic = "FILEUROPE/GYRO/"
+mqtt_base_topic = "FILEUROPE/GYRO/2/"
 ----------------------------------------
 -- Messages MQTT sortants
 ----------------------------------------
@@ -70,11 +80,45 @@ mqtt_trig_topics[mqtt_base_topic.."datas"]={
                 type = "up", -- or "down", "both", "low", "high"
                 qos = 0, retain = 0, callback = nil,
                 message = mqtt_out_topics[mqtt_base_topic.."datas"].message}            
+
+mqtt_trig_topics[mqtt_base_topic.."bt"]={
+                pin = BT_pin,
+                pullup = false,
+                type = "both", -- or "down", "both", "low", "high"
+                qos = 0, retain = 0, callback = nil,
+                message = function()
+                            return gpio.read(BT_pin)
+                        end}            
 ----------------------------------------
 -- Actions sur messages MQTT entrants
 ----------------------------------------
 mqtt_in_topics = {}
-
+mqtt_in_topics[mqtt_base_topic.."LED"]={
+            ["ON"]=function()
+                        tmr.stop(6)
+                        gpio.write(LED_pin,gpio.HIGH)
+                    end,
+            ["OFF"]=function()
+                        tmr.stop(6)
+                        gpio.write(LED_pin,gpio.LOW)
+                    end,
+            ["BLINK"]=function()
+                        gpio.write(LED_pin,gpio.HIGH)
+                        tmr.alarm(6,500,tmr.ALARM_SINGLE, function()
+                                gpio.write(LED_pin,gpio.LOW)
+                            end)
+                    end,
+            ["BLINK_ALWAYS"]=function()
+                        tmr.alarm(6,500,tmr.ALARM_AUTO, function()
+                                if led_alarm then
+                                    gpio.write(LED_pin,gpio.LOW)
+                                    led_alarm = false
+                                else
+                                    gpio.write(LED_pin,gpio.HIGH)
+                                    led_alarm = true
+                                end
+                            end)
+                        end}
 ----------------------------------------
 --Gestion du display : mqtt(json)=>affichage
 ----------------------------------------

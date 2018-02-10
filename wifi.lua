@@ -15,7 +15,14 @@ function wait_for_wifi_conn()
          else
             _PASSWORD = PASSWORD
          end
-         wifi.sta.config(_SSID, _PASSWORD, 1)
+         --wifi.sta.config(_SSID, _PASSWORD, 1)
+         -- si marche pas pour ancien, firmware : 
+         -- if (not pcall(function()
+         --             wifi.sta.config({ssid = _SSID, pwd=_PASSWORD})
+         --             end) then
+         --             wifi.sta.config(_SSID, _PASSWORD, 1)
+         -- end
+         wifi.sta.config({ssid = _SSID, pwd=_PASSWORD})
          if (WIFI_INDEX < table.getn(SSID)) then
             WIFI_INDEX = WIFI_INDEX + 1
          else

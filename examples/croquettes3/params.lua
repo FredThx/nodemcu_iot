@@ -6,11 +6,12 @@
 -------------------------------------------------
 --  Ce fichier : paramètres pour nodemcu CROQUETTES 3
 --               avec
---                  moteur pas à pas
+--                  moteur cc
+--                  peson + module HX711
 -------------------------------------------------
 -- Modules nécessaires dans le firmware :
 --    file, gpio, net, node,tmr, uart, wifi
---    bit, mqtt, cjson | sjson
+--    mqtt, hx711, pwm
 -------------------------------------------------
 
 LOGGER = false
@@ -20,14 +21,16 @@ LOGGER = false
 --------------------------------------
 
 -- moteur
+pin_moteur = 6
+-- hx711
+pin_clk = 1
+pin_data = 2
+poids={offset=56.5,pente=2104}
 
-moteur = require("stepper")
-moteur.init({1,2,3,4})
+moteur={pwm_ratio=0.4,temps_on = 100,pwm_freq = 500}
 
--- bouton
-
-BT_PIN = 5
-
+gpio.mode(pin_moteur,gpio.OUTPUT)
+hx711.init(pin_clk, pin_data)
 
 --------------------------------------
 -- Modules a charger
@@ -37,9 +40,9 @@ modules={}
 --------------------------------------
 -- Params WIFI 
 --------------------------------------
-SSID = {"WIFI_THOME1",'WIFI_THOME2'}
+SSID = {"WIFI_THOME1","WIFI_THOME2"}
 PASSWORD = "plus33324333562"
-HOST = "NODE-CROQ3"
+HOST = "NODE-CROQ4"
 wifi_time_retry = 10 -- minutes
 
 ----------------------------------------
@@ -50,7 +53,7 @@ mqtt_port = 1883
 mqtt_user = "fredthx"
 mqtt_pass = "GaZoBu"
 mqtt_client_name = HOST
-mqtt_base_topic = "T-HOME/CROQ3/"
+mqtt_base_topic = "T-HOME/CROQ4/"
 ----------------------------------------
 -- Messages MQTT sortants
 ---------------------------------------- 
@@ -62,42 +65,71 @@ test_period = nil
 test_init = false
 mqtt_test_topics = {}
 
+mqtt_out_topics[mqtt_base_topic .. "POIDS"]={
+                message = function()
+                        t = math.floor(10*math.max(0,poids.offset + hx711.read(0)/poids.pente))/10
+                        return t
+                    end,
+                qos = 0, retain = 0, callback = nil, manual = true}
 ----------------------------------------
 -- Messages sur trigger GPIO
 ----------------------------------------
 mqtt_trig_topics = {}
-mqtt_trig_topics[mqtt_base_topic.."BT"]={
-                pin = BT_PIN,
-                pullup = true,
-                type = "down", -- or "down", "both", "low", "high"
-                qos = 0, retain = 0, callback = nil,
-                message = function()
-                        print("Bt pushed")
-                        --mqtt_in_topics[mqtt_base_topic.."RELAIS"]["CHANGE"]()
-                        -- TODO : régler problème de déclenchement intempestif quand relais activé via WIFI
-                        return 1
-                    end
-                }  
+
 ----------------------------------------
 -- Actions sur messages MQTT entrants
 ----------------------------------------
 mqtt_in_topics = {}
 
-mqtt_in_topics[mqtt_base_topic.."MOTEUR"] = function(data)
-                        local data = cjson.decode(data)
-                        moteur.rotate(
-                                data.sens or moteur.FORWARD,
-                                data.pas or 1 , 
-                                data.interval or 1,
-                                6,
-                                function () 
-                                    mqtt_client:publish(
-                                        mqtt_base_topic.."MOTEUR_DONE",
-                                        1,
-                                        0,0) 
-                                end)
-                    end
+mqtt_in_topics[mqtt_base_topic.."MOTEUR"] = {
+            ["ON"]=function()
+                        print("MOTEUR ON")
+                        pwm.stop(pin_moteur)
+                        gpio.write(pin_moteur, gpio.HIGH)
+                    end,
+            ["OFF"]=function()
+                        print("MOTEUR OFF")
+                        tmr.stop(6)
+                        pwm.stop(pin_moteur)
+                        gpio.write(pin_moteur, gpio.LOW)
+                    end}
 
+mqtt_in_topics[mqtt_base_topic.."PWM_MOTEUR"]= function(data)
+                   if data then
+                       local duty = data * 1023
+                       pwm.setup(pin_moteur,moteur.pwm_freq, duty)
+                       pwm.start(pin_moteur)
+                   else
+                        pwm.stop(pin_moteur)
+                    end
+                end
+
+mqtt_in_topics[mqtt_base_topic.."DOSEP"] = function(data)
+                if (tonumber(data) and tonumber(data)>0) then
+                    cible = hx711.read(0) + data*poids.pente
+                    pwm.stop(pin_moteur)
+                    local duty = moteur.pwm_ratio * 1023
+                    pwm.setup(pin_moteur,moteur.pwm_freq, duty)
+                    tmr.alarm(6,400, tmr.ALARM_AUTO, function()
+                            gpio.write(pin_moteur, gpio.HIGH)
+                            tmr.alarm(0,moteur.temps_on, tmr.ALARM_SINGLE, function()
+                                gpio.write(pin_moteur, gpio.LOW)
+                                pwm.start(pin_moteur)
+                            end)
+                            if hx711.read(0)>cible then -- temps : 386 ms
+                                tmr.stop(0)
+                                pwm.stop(pin_moteur)
+                                gpio.write(pin_moteur, gpio.LOW)
+                                tmr.stop(6)
+                            end
+                        end)
+                else
+                    tmr.stop(6)
+                    pwm.stop(pin_moteur)
+                    gpio.write(pin_moteur, gpio.LOW)
+                end
+            end
+                    
 ----------------------------------------
 --Gestion du display : mqtt(json)=>affichage
 ----------------------------------------

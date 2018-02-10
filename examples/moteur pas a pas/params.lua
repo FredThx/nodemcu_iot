@@ -4,11 +4,13 @@
 -------------------------------------------------
 --  Auteur : FredThx  
 -------------------------------------------------
---  Ce fichier : paramètres pour nodemcu CROQUETTES
+--  Ce fichier : paramètres pour nodemcu CROQUETTES 3
 --               avec
---                    - ecran LCD en i2c
---                    - 1 bouton
---                      - grove gesture en i2c
+--                  moteur pas à pas
+-------------------------------------------------
+-- Modules nécessaires dans le firmware :
+--    file, gpio, net, node,tmr, uart, wifi
+--    bit, mqtt, cjson | sjson
 -------------------------------------------------
 
 LOGGER = false
@@ -17,23 +19,27 @@ LOGGER = false
 -- PARAMETRES CAPTEURS - ACTIONEURS
 --------------------------------------
 
--- display et grove gesture en i2c
-pin_sda = 5 
-pin_scl = 6 
+-- moteur
 
-pin_bt = 1
+moteur = require("stepper")
+moteur.init({1,2,3,4})
+
+-- bouton
+
+BT_PIN = 5
+
 
 --------------------------------------
 -- Modules a charger
 --------------------------------------
-modules={"i2c_lcd", "i2c_geste"}
+modules={}
 
 --------------------------------------
 -- Params WIFI 
 --------------------------------------
 SSID = {"WIFI_THOME1",'WIFI_THOME2'}
 PASSWORD = "plus33324333562"
-HOST = "NODE-CROQ"
+HOST = "NODE-CROQ3"
 wifi_time_retry = 10 -- minutes
 
 ----------------------------------------
@@ -44,10 +50,7 @@ mqtt_port = 1883
 mqtt_user = "fredthx"
 mqtt_pass = "GaZoBu"
 mqtt_client_name = HOST
-mqtt_base_topic = "T-HOME/CROQ/"
---Gestes
-GEST_TOPIC = mqtt_base_topic.."GESTE"
-
+mqtt_base_topic = "T-HOME/CROQ3/"
 ----------------------------------------
 -- Messages MQTT sortants
 ---------------------------------------- 
@@ -55,27 +58,16 @@ mesure_period = 1*60 * 1000
 mqtt_out_topics = {}
 
 -- Messages MQTT sortants sur test
-test_period = 1000
+test_period = nil
 test_init = false
 mqtt_test_topics = {}
-mqtt_test_topics[mqtt_base_topic.."INIT"]={{
-                test = function()
-                        if test_init then
-                            return false
-                        else
-                            test_init = true
-                            return true
-                        end
-                    end,
-                value = "INIT",
-                mqtt_repeat = false,
-                qos = 0, retain = 0, callback = nil}}
+
 ----------------------------------------
 -- Messages sur trigger GPIO
 ----------------------------------------
 mqtt_trig_topics = {}
 mqtt_trig_topics[mqtt_base_topic.."BT"]={
-                pin = pin_bt,
+                pin = BT_PIN,
                 pullup = true,
                 type = "down", -- or "down", "both", "low", "high"
                 qos = 0, retain = 0, callback = nil,
@@ -83,17 +75,30 @@ mqtt_trig_topics[mqtt_base_topic.."BT"]={
                         print("Bt pushed")
                         --mqtt_in_topics[mqtt_base_topic.."RELAIS"]["CHANGE"]()
                         -- TODO : régler problème de déclenchement intempestif quand relais activé via WIFI
-                        return gpio.read(pin_bt)
+                        return 1
                     end
                 }  
 ----------------------------------------
 -- Actions sur messages MQTT entrants
 ----------------------------------------
 mqtt_in_topics = {}
+
+mqtt_in_topics[mqtt_base_topic.."MOTEUR"] = function(data)
+                        local data = cjson.decode(data)
+                        moteur.rotate(
+                                data.sens or moteur.FORWARD,
+                                data.pas or 1 , 
+                                data.interval or 1,
+                                6,
+                                function () 
+                                    mqtt_client:publish(
+                                        mqtt_base_topic.."MOTEUR_DONE",
+                                        1,
+                                        0,0) 
+                                end)
+                    end
+
 ----------------------------------------
 --Gestion du display : mqtt(json)=>affichage
 ----------------------------------------
-mqtt_in_topics[mqtt_base_topic.."DISPLAY"]=function(data)
-                disp_add_data(data)
-            end
             

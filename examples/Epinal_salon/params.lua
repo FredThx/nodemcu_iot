@@ -57,22 +57,22 @@ modules={
 --------------------------------------
 -- Params WIFI 
 --------------------------------------
-SSID = "WIFI_THOME"
+SSID = "THOME_24"
 PASSWORD = "plus33324333562"
-HOST = "NODE-EPINAL-SALON"
+HOST = "NODE-SARREG-SALON"
 wifi_time_retry = 10 -- minutes
 
 ----------------------------------------
 -- Params MQTT
 ----------------------------------------
 --mqtt_host = "31.29.97.206"
-mqtt_host = "192.168.0.15"
+mqtt_host = "192.168.0.20"
 --mqtt_host = "192.168.10.155"
 mqtt_port = 1883
 mqtt_user = "fredthx"
 mqtt_pass = "GaZoBu"
 mqtt_client_name = HOST
-mqtt_base_topic = "T-EPINAL/SALON/"
+mqtt_base_topic = "T-SARREG/SALON/"
 ----------------------------------------
 -- Messages MQTT sortants
 ----------------------------------------

@@ -9,7 +9,7 @@
 --                  end,
 --          value = "C'est vrai",
 --          mqtt_repeat = false,
---         qos = 0, retain = 0, callback = nil}}
+--         qos = 0, retain = 0, callback = nil}
 --
 
 for topic, tests in pairs(mqtt_test_topics) do

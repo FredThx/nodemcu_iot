@@ -63,10 +63,6 @@ do
     -- Private ( Auxillary and Utility ) methods
     ---------------------------------------------------------------------------------------
 
-    -- utility method do calculate modulo. has same effect as a%b in java,c,c++
-    local mod = function (a,b)
-        return a - math.floor(a/b)*b
-    end
 
     local updatePhaseForNextStep = function ()
         --increment phase in given direction

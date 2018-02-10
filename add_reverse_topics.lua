@@ -46,12 +46,22 @@ for topic in pairs(mqtt_out_topics) do
      end
 end
 
--- deamons systems : pour executer du code via MQTT
+-- deamons systems : 
 if mqtt_base_topic then
+	-- pour executer du code via MQTT
     mqtt_in_topics[mqtt_base_topic.."_LUA"]= function(data)
                    node.input(data)
                 end
+	-- pour tester si vivant
+	mqtt_in_topics[mqtt_base_topic.."_HELLO"]= function(data)
+			   mqtt_client:publish(
+					mqtt_base_topic.."HELLO",
+					mqtt_client_name,
+					0,
+					0)
+			end
 end
+
 -- watchdog
 if WATCHDOG then
     mqtt_in_topics[mqtt_base_topic.."_WATCHDOG"]={
