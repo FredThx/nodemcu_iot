@@ -12,7 +12,7 @@
 ------------------------------------------
 if mqtt_trig_topics then
     for topic, trig in pairs(mqtt_trig_topics) do
-        print("Init trigger : ", trig.pin, trig.type)
+        print_log("Init trigger : ", trig.pin, trig.type)
         -- Initialisations
         if trig.pullup then
             gpio.mode(trig.pin, gpio.INT, gpio.PULLUP)
@@ -28,7 +28,7 @@ if mqtt_trig_topics then
                 if trig.divisor then
                     if trig.type=="_down" then
                         -- **** Function et diviseur et _down
-                        print("    Function et diviseur et _down")
+                        print_log("    Function et diviseur et _down")
                         gpio.trig(trig.pin, "both" ,function(level)
                             if not trig.actif then
                                 trig.counter = trig.counter+1
@@ -46,7 +46,7 @@ if mqtt_trig_topics then
                         end)
                     else
                         -- **** Function et diviseur
-                        print("    Function et diviseur")
+                        print_log("    Function et diviseur")
                         gpio.trig(trig.pin, trig.type ,function(level)
                             trig.counter = trig.counter+1
                             if trig.counter>trig.divisor then
@@ -61,7 +61,7 @@ if mqtt_trig_topics then
                 else
                     if trig.type=="_down" then
                         -- ****function sans diviseur et _down
-                        print("     function sans diviseur et _down")
+                        print_log("     function sans diviseur et _down")
                         gpio.trig(trig.pin, "both" ,function(level)
                             if not trig.actif then
                                 local msg
@@ -75,7 +75,7 @@ if mqtt_trig_topics then
                         end)
                     else
                         -- ****function sans diviseur
-                        print("     function sans diviseur")
+                        print_log("     function sans diviseur")
                         gpio.trig(trig.pin, trig.type ,function(level)
                             local msg
                             no_err, msg = pcall(trig.message)
@@ -88,7 +88,7 @@ if mqtt_trig_topics then
                 if trig.divisor then
                     if trig.type=="_down" then
                         -- ****Valeur et diviseur et _down
-                        print("     Valeur et diviseur et _down")
+                        print_log("     Valeur et diviseur et _down")
                         gpio.trig(trig.pin, "both" ,function(level)
                             if not trig.actif then
                                 trig.counter = trig.counter+1
@@ -104,7 +104,7 @@ if mqtt_trig_topics then
                         end)
                     else
                         -- ****Valeur et diviseur
-                        print("     Valeur et diviseur")
+                        print_log("     Valeur et diviseur")
                         gpio.trig(trig.pin, trig.type ,function(level)
                             trig.counter = trig.counter+1
                             if trig.counter>trig.divisor then
@@ -117,7 +117,7 @@ if mqtt_trig_topics then
                 else
                     if trig.type=="_down" then
                         -- ****Valeur sans diviseur et _down
-                        print("     Valeur sans diviseur et _down")
+                        print_log("     Valeur sans diviseur et _down")
                         gpio.trig(trig.pin, "both" ,function(level)
                             if trig.actif then
                                 print(topic.." : "..trig.message)
@@ -129,7 +129,7 @@ if mqtt_trig_topics then
                         end)
                     else
                         -- ****Valeur sans diviseur
-                        print("     Valeur sans diviseur")
+                        print_log("     Valeur sans diviseur")
                         gpio.trig(trig.pin, trig.type ,function(level)
                             print(topic.." : "..trig.message)
                             mqtt_client:publish(topic, trig.message, trig.qos or 0, trig.retain or 0, trig.callback)
@@ -141,7 +141,7 @@ if mqtt_trig_topics then
             if trig.divisor then
                 if trig.type == "_down" then
                     -- **** Level et diviseur et _down
-                    print("     Level et diviseur et _down")
+                    print_log("     Level et diviseur et _down")
                     gpio.trig(trig.pin, "both" ,function(level)
                         if trig.actif then
                             trig.counter = trig.counter+1
@@ -157,7 +157,7 @@ if mqtt_trig_topics then
                     end)
                 else
                     -- **** Level et diviseur
-                    print("     Level et diviseur")
+                    print_log("     Level et diviseur")
                     gpio.trig(trig.pin, trig.type ,function(level)
                         trig.counter = trig.counter+1
                         if trig.counter>trig.divisor then
@@ -170,7 +170,7 @@ if mqtt_trig_topics then
             else
                 if trig.type == "_down" then
                     -- **** Level sans diviseur et _down
-                    print("     Level sans diviseur et _down")
+                    print_log("     Level sans diviseur et _down")
                     gpio.trig(trig.pin, "both" ,function(level)
                         if trig.actif then
                             print(topic.." : "..level)
@@ -182,7 +182,7 @@ if mqtt_trig_topics then
                     end)
                 else
                     -- **** Level sans diviseur
-                    print("     Level sans diviseur")
+                    print_log("     Level sans diviseur")
                     gpio.trig(trig.pin, trig.type ,function(level)
                         print(topic.." : "..level)
                         mqtt_client:publish(topic, level, trig.qos or 0, trig.retain or 0, trig.callback)
@@ -193,6 +193,6 @@ if mqtt_trig_topics then
     end
     -- free memory
     mqtt_trig_topics = nil
-    print('Init_trig : ok')
+    print_log('Init_trig : ok')
 end
 

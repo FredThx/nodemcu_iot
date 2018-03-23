@@ -11,17 +11,20 @@
 --  5   :   _dofile("test_and_send")
 --  6   :   libre pour le projet (ex : blink leb)
 ---------------------------------------------------
-_dofile("params")
 
-print("******************************")
-print("**   " .. HOST.. "              **")
-print("******************************")
-print()
+_dofile("params")
+if MSG_DEBUG == nil then MSG_DEBUG = true end
+
+print_log("******************************")
+print_log("**   " .. HOST.. "              **")
+print_log("******************************")
+print_log("")
+
 
 if LOGGER then 
     _dofile("logger")
     node.output(logger,1)
-    print("----- NODE RESTART -----")
+    print_log("----- NODE RESTART -----")
 end
 
 if WATCHDOG then
@@ -30,7 +33,7 @@ end
 
 _dofile("add_reverse_topics")
 for key, reader in pairs(modules) do
-    print("Load " .. reader)
+    print_log("Load " .. reader)
     _dofile(reader)
 end
 

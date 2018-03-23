@@ -8,20 +8,20 @@ for topic, action in pairs(mqtt_out_topics) do
             no_err = true
             rep = action.message
         end
-        print(topic, ":" , rep)
+        print_log(topic, ":" , rep)
         if no_err and rep then
             if mqtt_client:publish(topic,rep,
                                 action.qos or 0,
                                 action.retain or 0,
                                 action.callback) then
-                print("MQTT send : ok")
+                print_log("MQTT send : ok")
             else
-                print("MQTT not send : mqtt error")
+                print_log("MQTT not send : mqtt error")
             end
-            tmr.delay(1000000)
+            --tmr.delay(1000000) Pourquoi ca a ete mis??? Il ne faut pas !!!
             collectgarbage()
         else
-            print("MQTT not send : action error")
+            print_log("MQTT not send : action error")
         end
     end
 end

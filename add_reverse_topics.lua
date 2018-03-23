@@ -5,9 +5,9 @@
 
 for topic in pairs(mqtt_out_topics) do
     mqtt_in_topics[topic.."_"]={["SENDIT"]=function()
-            print(topic,"...")
+            print_log(topic,"...")
             local no_err, rep = pcall(mqtt_out_topics[topic]["message"])
-            print(topic, ":" , rep)
+            print_log(topic, ":" , rep)
             if no_err and rep then
                 mqtt_client:publish(
                         topic,
@@ -17,10 +17,10 @@ for topic in pairs(mqtt_out_topics) do
                         mqtt_out_topics[topic]["callback"] --
                         )
             else
-                print("MQTT not send.")
+                print_log("MQTT not send.")
             end
         end}
-    print("Reverse topic "..topic.."_".." created.")
+    print_log("Reverse topic "..topic.."_".." created.")
     -- Add deamons on_change
     if mqtt_out_topics[topic]["on_change"] then
         mqtt_out_topics[topic]["on_change_value"]=nil
@@ -42,7 +42,7 @@ for topic in pairs(mqtt_out_topics) do
                         end,
                     mqtt_repeat = false,
                     qos = 0, retain = 0, callback = nil}}
-        print("Test topic "..topic.."_".." created.")
+        print_log("Test topic "..topic.."_".." created.")
      end
 end
 
@@ -68,6 +68,6 @@ if WATCHDOG then
         ["INIT"]=function()
                 tmr.softwd(WATCHDOG_TIMEOUT or 3600)
             end}
-    print("Mqtt watchdog created.")
+    print_log("Mqtt watchdog created.")
 end
-print('reverse mqtt topics : ok')
+print_log('reverse mqtt topics : ok')

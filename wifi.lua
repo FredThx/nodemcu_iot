@@ -9,7 +9,7 @@ function wait_for_wifi_conn()
          local _SSID
          local _PASSWORD
          _SSID = SSID[WIFI_INDEX]
-         print ("Waiting for Wifi connection on " .. _SSID)
+         print_log ("Waiting for Wifi connection on " .. _SSID)
          if (type(PASSWORD)=='table') then
             _PASSWORD = PASSWORD[WIFI_INDEX]
          else
@@ -31,10 +31,10 @@ function wait_for_wifi_conn()
       else
          tmr.stop (1)
          --print ("ESP8266 mode is: " .. wifi.getmode ( ))
-         print ("The module MAC address is: " .. wifi.sta.getmac ( ))
+         print_log ("The module MAC address is: " .. wifi.sta.getmac ( ))
          local _ssid = wifi.sta.getconfig()
-         print ("Access point : " .. _ssid)
-         print ("Config done, IP is " .. wifi.sta.getip ( ))
+         print_log ("Access point : " .. _ssid)
+         print_log ("Config done, IP is " .. wifi.sta.getip ( ))
          --pcall(function()  -- not work with master firmware!!!
          --           wifi.sta.sethostname(HOST)
          --           print("Current hostname is: \""..wifi.sta.gethostname().."\"")

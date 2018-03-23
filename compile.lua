@@ -22,7 +22,8 @@ progs={ "init_mqtt",
         "maxsonar",
         "servo",
         "mpu6050",
-        "stepper"
+        "stepper",
+        "mcp3201"
         }
 files = file.list()
 for k, prog in pairs(progs) do

@@ -45,11 +45,12 @@ do
             if level == 1 then
                 M.start_echo = now
             else
-                --print (now, M.start_echo)
+                print (now, M.start_echo)
                 if M.start_echo and now > M.start_echo then
                     M.mesure = (now - M.start_echo)*340/2000000
+                    --print(M.mesure)
                     if M.mesure > 10 then -- max distance : 10 meters
-                        --M.mesure = nil
+                        M.mesure = nil
                     else
                         if M.callback then
                             M.callback(M.mesure)

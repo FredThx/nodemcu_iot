@@ -9,3 +9,9 @@ function _dofile(prog)
     end
 end
         
+
+print_log = function(txt)
+    if MSG_DEBUG then
+        print(txt)
+    end
+end
