@@ -6,8 +6,9 @@
 -------------------------------------------------
 --  Ce fichier : paramètres pour nodemcu CROQUETTES 3
 --               avec
---                  moteur cc
+--                  moteur cc 12V
 --                  peson + module HX711
+--                  deux vibreurs (moteur cc 3V)
 -------------------------------------------------
 -- Modules nécessaires dans le firmware :
 --    file, gpio, net, node,tmr, uart, wifi
@@ -22,6 +23,13 @@ LOGGER = false
 
 -- moteur
 pin_moteur = 6
+-- vibeurs
+pin_vibreur_1 = 7
+pin_vibreur_2 = 8
+gpio.mode(pin_vibreur_1,gpio.OUTPUT)
+gpio.mode(pin_vibreur_2,gpio.OUTPUT)
+gpio.write(pin_vibreur_1,gpio.LOW)
+gpio.write(pin_vibreur_2,gpio.LOW)
 -- hx711
 pin_clk = 1
 pin_data = 2
@@ -129,7 +137,24 @@ mqtt_in_topics[mqtt_base_topic.."DOSEP"] = function(data)
                     gpio.write(pin_moteur, gpio.LOW)
                 end
             end
-                    
+mqtt_in_topics[mqtt_base_topic.."VIBREUR1"] = {
+            ["ON"]=function()
+                        print("VIBREUR 1 ON")
+                        gpio.write(pin_vibreur_1, gpio.HIGH)
+                    end,
+            ["OFF"]=function()
+                        print("VIBREUR 1 OFF")
+                        gpio.write(pin_vibreur_1, gpio.LOW)
+                    end}
+mqtt_in_topics[mqtt_base_topic.."VIBREUR2"] = {
+            ["ON"]=function()
+                        print("VIBREUR 2 ON")
+                        gpio.write(pin_vibreur_2, gpio.HIGH)
+                    end,
+            ["OFF"]=function()
+                        print("VIBREUR 2 OFF")
+                        gpio.write(pin_vibreur_2, gpio.LOW)
+                    end}       
 ----------------------------------------
 --Gestion du display : mqtt(json)=>affichage
 ----------------------------------------

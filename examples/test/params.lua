@@ -6,33 +6,17 @@
 -------------------------------------------------
 --  Ce fichier : paramètres pour nodemcu
 --               avec
---                    - sonde humidité terre
---                    - sonde humidité air
---                    - sonde pluie
---                    - sonde luminosité
---                    - sonde température
--- TODO : tester ajout un relay pour piloter pompe
+--
 -------------------------------------------------
 
 LOGGER = false
 
--- Module MCP3008 pour entree analogiques
---mcp = _dofile("mcp3008")
---mcp.init(7,6,8,5)
--- Capteur DTH11-22
-DTH_pin = 4
--- Capteur température DSx20
-DS1820_PIN = 3
-sensors = { 
-    [string.char(40,255,213,74,1,21,4,230)] = "piscine"
-}
--- Relay pompe
-POMPE_PIN = 2
+
 
 ------------------------------
 -- Modules a charger
 ------------------------------
-modules={"DTH_reader","ds1820_reader"}
+modules={}
 ------------------
 -- Params WIFI 
 ------------------
@@ -54,24 +38,7 @@ mqtt_base_topic = "T-HOME/TEST/"
 -- Messages MQTT sortants
 mesure_period = 1*60 * 1000
 mqtt_out_topics = {}
-mqtt_out_topics[mqtt_base_topic.."temperature"]={
-                message = function()
-                        t,h=readDht()    
-                        return t
-                    end,
-                qos = 0, retain = 0, callback = nil}
-mqtt_out_topics[mqtt_base_topic.."humidite"]={
-                message = function()
-                        t,h=readDht()
-                        return h
-                    end,
-                qos = 0, retain = 0, callback = nil}
-mqtt_out_topics[mqtt_base_topic.."test"]={
-                message = function()
-                        t = "test"
-                        return t
-                    end,
-                qos = 0, retain = 0, callback = nil}
+
 -- Messages MQTT sortants sur test
 test_period = 1000
 mqtt_test_topics = {}
@@ -80,15 +47,6 @@ mqtt_test_topics = {}
 mqtt_trig_topics = {}                
 -- Actions sur messages MQTT entrants
 mqtt_in_topics = {}
-mqtt_in_topics["T-HOME/PISCINE/pompe"]={
-            ["ON"]=function()
-                        print("POMPE ON")
-                        gpio.write(POMPE_PIN, gpio.HIGH)
-                    end,
-            ["OFF"]=function()
-                        print("POMPE OFF")
-                        gpio.write(POMPE_PIN, gpio.LOW)
-                    end}
 
 --Gestion du display : mqtt(json)=>affichage
 disp_texts = {}
