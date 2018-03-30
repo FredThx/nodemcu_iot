@@ -3,63 +3,61 @@
 
 --GESTION CAPTEURS DS1820
 
--- Lecture d'un capteur
+-- Lecture d'un capteur via function callback
 -- Si addr : renvoie la temperature du capteur spécifie
--- Si pas addr : renvoie une des temperatures lues (au pif) => util quand un seul capteur de branche
--- Si erreur, renvoie nil
-function readDSSensor(addr)
-    local temp = 85 -- valeur retournee par le capteur quand ca merde
-    local i = 0      
-    if (addr==nil) then
-        for k,v in pairs(readDSSensors()) do
-            temp = v -- On prend un des capteurs détectés au pif
-        end
-    else
-        while (i<10 and (temp==85 or temp ==0)) do
-            temp = ds18b20.read(addr)
-            if (temp == 85 or temp == 0) then 
-                print("DS18b20 error : bad value (" .. temp .. ")")
-                tmr.delay(100000) -- 0.1 secondes
+-- Si pas addr : renvoie toutes des temperatures lues (au pif) => util quand un seul capteur de branche
+--
+-- U
+
+-- DS18b20 module (One Wire)
+--
+-- Wiring :
+--       5V -------------Vcc
+--                |
+--            [4.7kOhms]
+--                |
+--               --------- pin (to define with init)
+--
+--       0V   ------------ GRND
+--
+-- usage :
+--  temps = dofile('ds1820_reader.lua') or .lc if compiled
+--  temps.init(pin)
+--  temps.read(roms, function(result) print("temp :",result) end)
+--     ou roms : 
+--              - nil : execute la function à chaque device
+--              - "XX:XX:XX:XX:XX:XX:XX:XX" : execute la function si capteur detecte
+--              - {"XX:XX:...XX,"YY:YY:...YY" ...} : execute la function si capteurs detectes
+-- Notes :
+--
+-------------------------------------------------
+-- Modules nécessaires dans le firmware :
+--    
+--    ds18b20
+-------------------------------------------------
+
+--TODO : regler le probleme de demandes simultanees
+
+
+local M
+do
+
+    function read_DS18B20(ask_rom, callback)
+            if ask_rom == nil then
+                ask_rom={}
+            elseif type(ask_rom)~="table" then
+                ask_rom = {ask_rom}
             end
-            i = i + 1
-        end
+            ds18b20.read(function(ind,rom,res,temp,tdec,par)
+                    print_log(string.format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",string.match(rom,"(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+)")).." => "..temp)
+                    callback(temp)
+                end,ask_rom)
     end
-    if (temp == 85 or temp == 0) then temp = nil end
-    return temp
+    
+    M =  {
+            read = read_DS18B20,
+            init = ds18b20.setup,
+            pipe = {}
+        }    
 end
-
-
--- Lecture des capteurs de temperature 
--- Si pas de arguments, renvoi la table de tous les capteurs trouves
--- si un nom specifie (renseigne dans la table sensors), renvoie la temperature
-function readDSSensors(sensor_name)
-    --Chargement du module en mémoire
-    ds18b20 = nil
-    package.loaded["ds18b20"]=nil
-    require("ds18b20")
-    ds18b20.setup(DS1820_PIN)
-	local reponse = {}
-    local sensor_name_found,i
-	for key, addr in pairs(ds18b20.addrs()) do
-		sensor_name_found = sensors[addr] -- 
-		if (sensor_name_found == nil) then 
-			sensor_name_found = ""
-			for i = 1, 7 do
-				sensor_name_found = sensor_name_found .. addr:byte(i,i) .. "-"
-			end
-			sensor_name_found = sensor_name_found .. addr:byte(8,8)
-		end
-		reponse[sensor_name_found] = readDSSensor(addr)
-		print(sensor_name_found, reponse[sensor_name_found])
-	end
-    -- déchargement du module de la mémoire
-    ds18b20 = nil
-    package.loaded["ds18b20"]=nil
-	if (sensor_name==nil) then
-		return reponse
-	else
-		return reponse[sensor_name]--
-	end
-end
-
-
+return M

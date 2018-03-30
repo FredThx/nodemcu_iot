@@ -28,12 +28,18 @@ gpio.mode(BT_PIN, gpio.INPUT)
 
 -- Capteur température DSx20
 DS1820_PIN = 4 
+thermometres=_dofile("ds1820_reader")
+thermometres.init(DS1820_PIN)
+
 sensors = { 
-    [string.char(40,255,74,144,81,20,0,250)] = "frigo",
+    --[string.char(40,255,74,144,81,20,0,250)] = "frigo",
     --[string.char(40,255,143,78,80,20,0,181)] 
-    [string.char(40,255,158,90,160,22,3,204)]= "congelateur",
-    [string.char(40,255,50,226,80,20,0,173)] = "cuisine"--,
+    --[string.char(40,255,158,90,160,22,3,204)]= "congelateur",
+    --[string.char(40,255,50,226,80,20,0,173)] = "cuisine"--,
     --[string.char(40,255,202,79,80,20,0,1)] = "test"
+    frigo = "28:70:BC:2C:06:00:00:5B",
+    congelateur = "28:BE:2E:2D:06:00:00:6C",
+    cuisine =  "28:05:85:2E:06:00:00:58"
 }
 
 --------------------------------------
@@ -52,7 +58,8 @@ modules={
 --------------------------------------
 SSID = "WIFI_THOME2"
 PASSWORD = "plus33324333562"
-HOST = "NODE-CUISINE"
+--HOST = "NODE-CUISINE"
+HOST = "NODE-TEST"
 wifi_time_retry = 10 -- minutes
 
 ----------------------------------------
@@ -63,34 +70,26 @@ mqtt_port = 1883
 mqtt_user = "fredthx"
 mqtt_pass = "GaZoBu"
 mqtt_client_name = HOST
-mqtt_base_topic = "T-HOME/CUISINE/"
+--mqtt_base_topic = "T-HOME/CUISINE/"
+mqtt_base_topic = "T-HOME/TEST/"
 ----------------------------------------
 -- Messages MQTT sortants
 ----------------------------------------
 mesure_period = 10*60 * 1000
 mqtt_out_topics = {}
 mqtt_out_topics[mqtt_base_topic.."REFRIGERATEUR/temperature"]={
-                message = function()
-                        t = readDSSensors("frigo")
-                        return t
+                result_on_callback = function(callback)
+                        thermometres.read(sensors["frigo"],callback)
                     end,
                 qos = 0, retain = 0, callback = nil}
 mqtt_out_topics[mqtt_base_topic.."CONGELATEUR/temperature"]={
-                message = function()
-                        t = readDSSensors("congelateur")
-                        return t
-                    end,
-                qos = 0, retain = 0, callback = nil}
-mqtt_out_topics[mqtt_base_topic.."TEST/temperature"]={
-                message = function()
-                        t = readDSSensors("test")
-                        return t
+                result_on_callback = function(callback)
+                        thermometres.read(sensors["congelateur"],callback)
                     end,
                 qos = 0, retain = 0, callback = nil}
 mqtt_out_topics[mqtt_base_topic.."temperature"]={
-                message = function()
-                        t = readDSSensors("cuisine")
-                        return t
+                result_on_callback = function(callback)
+                        thermometres.read(sensors["cuisine"],callback)
                     end,
                 qos = 0, retain = 0, callback = nil}
 ----------------------------------------

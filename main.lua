@@ -32,7 +32,7 @@ if WATCHDOG then
 end
 
 _dofile("add_reverse_topics")
-for key, reader in pairs(modules) do
+for key, reader in pairs(modules or {}) do
     print_log("Load " .. reader)
     _dofile(reader)
 end

@@ -2,25 +2,26 @@
 -- exemple /T-HOME/TEST/temperature est le topic dans lequel est envoyé toutes les x minutes
 --         /T-HOME/TEST/temperature_ est le topic de demande de la température (valeur = "SENDIT")
 
-
 for topic in pairs(mqtt_out_topics) do
-    mqtt_in_topics[topic.."_"]={["SENDIT"]=function()
-            print_log(topic,"...")
-            local no_err, rep = pcall(mqtt_out_topics[topic]["message"])
-            print_log(topic, ":" , rep)
-            if no_err and rep then
-                mqtt_client:publish(
-                        topic,
-                        rep,
-                        mqtt_out_topics[topic]["qos"] or 0,
-                        mqtt_out_topics[topic]["retain"] or 0,
-                        mqtt_out_topics[topic]["callback"] --
-                        )
-            else
-                print_log("MQTT not send.")
-            end
-        end}
-    print_log("Reverse topic "..topic.."_".." created.")
+    if mqtt_out_topics[topic]["message"] then
+        mqtt_in_topics[topic.."_"]={["SENDIT"]=function()
+                local no_err, rep = pcall(mqtt_out_topics[topic]["message"])
+                if no_err and rep then
+                    mqtt_publish(rep, topic,mqtt_out_topics[topic])
+                else
+                    print_log("MQTT not send.")
+                end
+            end}
+        print_log("Reverse topic "..topic.."_".." created.")
+    end
+    if mqtt_out_topics[topic]["result_on_callback"] then
+        mqtt_in_topics[topic.."_"]={["SENDIT"]=function()
+                pcall(mqtt_out_topics[topic]["result_on_callback"], function(rep)
+                            mqtt_publish(rep, topic ,mqtt_out_topics[topic])
+                        end)
+                 end}
+     end
+     print_log("Reverse topic "..topic.."_".." created.")
     -- Add deamons on_change
     if mqtt_out_topics[topic]["on_change"] then
         mqtt_out_topics[topic]["on_change_value"]=nil

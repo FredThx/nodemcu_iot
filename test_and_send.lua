@@ -23,10 +23,7 @@ for topic, tests in pairs(mqtt_test_topics) do
 				value = test["value"]
 			end
             print(topic, ":" , value)
-            mqtt_client:publish(topic,value,
-                        test["qos"] or 0,
-                        test["retain"] or 0,
-                        test["callback"])        
+            mqtt_publish(value,topic,test)
         end
     end
 end

@@ -4,10 +4,18 @@
 
 -- Capteur température DSx20
 DS1820_PIN = 4 
-sensors = { }
+thermometres=_dofile("ds1820_reader")
+thermometres.init(DS1820_PIN)
 
 -- AUTREs
-FAN_RELAY_PIN = 3
+FAN_RELAY_PIN = 5
+gpio.mode(FAN_RELAY_PIN,gpio.OUTPUT)
+gpio.write(FAN_RELAY_PIN,gpio.LOW)
+
+------------------------------
+-- Modules a charger
+------------------------------
+modules={"ds1820_reader"}
 
 ------------------
 -- Params WIFI 
@@ -31,9 +39,8 @@ mqtt_base_topic = "T-HOME/BAIE/"
 mesure_period = 10*60 * 1000
 mqtt_out_topics = {}
 mqtt_out_topics[mqtt_base_topic.."temperature"]={
-                message = function()
-                        t = readDSSensor()
-                        return t
+                result_on_callback = function(callback)
+                        thermometres.read(nil,callback)
                     end,
                 qos = 0, retain = 0, callback = nil}
 

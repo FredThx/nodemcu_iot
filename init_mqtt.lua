@@ -65,6 +65,20 @@ function mqtt_connect()
         end)
 end
 
+function mqtt_publish(rep,topic,action)
+            print_log("publish ".. topic.. "=>" ..rep)
+            if mqtt_client:publish(topic,rep,
+                                action.qos or 0,
+                                action.retain or 0,
+                                action.callback) then
+                print_log("MQTT send : ok")
+            else
+                print_log("MQTT not send : mqtt error")
+            end
+            --tmr.delay(1000000) Pourquoi ca a ete mis??? Il ne faut pas !!!
+            collectgarbage()       
+    end
+
 mqtt_connect()
 print_log('Init_mqtt : ok')
                 
