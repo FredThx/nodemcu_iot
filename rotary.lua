@@ -1,5 +1,5 @@
 -- Rotary encoder module
---  based on the official rotary module (https://nodemcu.readthedocs.io/en/master/en/modules/rotary/)
+--  from scratch
 --
 --
 -- usage :
@@ -20,34 +20,55 @@ local M
 do
     local channels = {}
     for channel = 0,2 do channels[channel]={} end
-
+    
     local init_rotary = function(channel, pina, pinb,nb_impulsion_per_detent,pinpress, longpress_time_ms, dblclick_time_ms)
-        channels[channel].ipd = nb_impulsion_per_detent or 1
-		channels[channel].count = 0
-        rotary.setup(unpack({channel, pina, pinb, pinpress, longpress_time_ms, dblclick_time_ms})) 
-        channels[channel].pos = rotary.getpos(channel)
+        local ch = channels[channel]
+        ch.ipd = nb_impulsion_per_detent or 1
+        ch.count = 0
+        gpio.mode(pina, gpio.INPUT, gpio.PULLUP)
+        gpio.mode(pinb, gpio.INPUT, gpio.PULLUP)
+        ch.pina = pina
+        ch.pinb = pinb
+        ch.last_read = {0,0,0}
     end
+
+    local test_turn = function(channel, val)
+            local ch = channels[channel]
+            if val ~= ch.last_read[3] then
+                table.insert(ch.last_read,val)
+                table.remove(ch.last_read,1)
+                if ch.last_read[1]==2 and ch.last_read[2]==0 and ch.last_read[3]==1 then
+                    ch.count = ch.count - 1
+                    ch.callback(-1, ch.count)
+                elseif ch.last_read[1]==1 and ch.last_read[2]==0 and ch.last_read[3]==2 then
+                    ch.count = ch.count + 1
+                    ch.callback(1, ch.count)
+                end
+            end
+        end
     
     local on_rotary = function(channel,eventtype, callback)
-		if eventtype == rotary.TURN then
-            --M.channels[channel].callback = callback
-			rotary.on(channel, rotary.TURN, function(type, pos, when)
-                    local ch = M.channels[channel]
-					if math.abs(ch.pos - pos) >= ch.ipd then
-						ch.count = ch.count + (pos - ch.pos) / ch.ipd
-                        ch.pos = pos
-						callback(rotary.TURN, ch.count, when)
-					end
-				end)
-		else 
-			rotary.on(channel, eventtype, callback)
-		end
-	end
-	
+        if eventtype == M.TURN then
+            local ch = M.channels[channel]
+            ch["callback"] = callback
+            gpio.trig(ch.pina,"both", function(level)
+                    local pinb = gpio.read(ch.pinb)
+                    test_turn(channel, level + pinb * 2)
+                end)
+            gpio.trig(ch.pinb,"both", function(level)
+                    local pina = gpio.read(ch.pina)
+                    test_turn(channel, pina + level * 2)
+                end)
+        else 
+            print("eventype not yet implemented")
+        end
+    end
+    
     M =  {
             on = on_rotary,
             init = init_rotary,
-            channels = channels
+            channels = channels,
+            TURN = 8
         }
 end
 return M
