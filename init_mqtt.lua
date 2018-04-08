@@ -67,6 +67,7 @@ end
 
 function mqtt_publish(rep,topic,action)
             print_log("publish ".. topic.. "=>" ..rep)
+            if not action then action = {} end
             if mqtt_client:publish(topic,rep,
                                 action.qos or 0,
                                 action.retain or 0,

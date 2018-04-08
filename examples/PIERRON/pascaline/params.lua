@@ -28,14 +28,16 @@ rot.init(1,3,4)
 rot.init(2,5,6)
 
 mqtt_connected_callback = function()
+        print("Init rotarys...")
         rot.on(0,rot.TURN, function(sens, count)
-                mqtt_publish(sens,mqtt_base_topic.."ROT\1")
+                print("ROT0 : ",sens)
+                mqtt_publish(sens,mqtt_base_topic.."ROT/1")
             end)
         rot.on(1,rot.TURN, function(sens, count)
-                mqtt_publish(sens,mqtt_base_topic.."ROT\10")
+                mqtt_publish(sens,mqtt_base_topic.."ROT/10")
             end)
         rot.on(2,rot.TURN, function(sens, count)
-                mqtt_publish(sens,mqtt_base_topic.."ROT\100")
+                mqtt_publish(sens,mqtt_base_topic.."ROT/100")
             end)
     end
 
@@ -48,7 +50,7 @@ disp_sla = 0x3c
 -- Modules a charger
 ------------------------------
 modules={"i2c_display"}
-
+modules = {}
 ------------------
 -- Params WIFI 
 ------------------
@@ -85,6 +87,6 @@ mqtt_test_topics = {}
 
 --Gestion du display : mqtt(json)=>affichage
 disp_texts = {}
-mqtt_in_topics[mqtt_base_topic.."DISPLAY"]=function(data)
-                disp_add_data(data)
-            end
+--mqtt_in_topics[mqtt_base_topic.."DISPLAY"]=function(data)
+--                disp_add_data(data)
+--            end
