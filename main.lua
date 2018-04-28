@@ -44,4 +44,37 @@ function on_wifi_connected()
     _dofile("init_mqtt")
 end
 
+function mqtt_publish(rep,topic,action)
+            if not action then action = {} end
+            if type(rep)=="table" then
+                rep = sjson.encode(rep)
+            end
+            print_log("publish ".. topic.. "=>" ..rep)
+            if mqtt_connected then
+                if mqtt_client:publish(topic,rep,
+                                    action.qos or 0,
+                                    action.retain or 0,
+                                    action.callback) then
+                    print_log("MQTT send : ok")
+                else
+                    print_log("MQTT not send : mqtt error")
+                    --TODO : reconnect
+                end
+                --tmr.delay(1000000) Pourquoi ca a ete mis??? Il ne faut pas !!!
+                collectgarbage()       
+            end
+            if action.usb then
+                print(rep)
+            end
+    end
+
+if mesure_period then
+    tmr.create():alarm(mesure_period, tmr.ALARM_AUTO, function () 
+            _dofile("read_and_send")
+            if LOGGER then
+                check_logfile_size()
+            end
+        end)
+end
+                        
 _dofile("wifi")

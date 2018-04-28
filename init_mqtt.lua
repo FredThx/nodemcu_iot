@@ -1,4 +1,16 @@
+-----------------------------------------
 -- Initialisation MQTT
+--
+-- Ce programme est lancé une, fois que la connexion WIFI est établie
+--
+-- * Création d'un client mqtt
+-- * Subscribe aux topics de mqtt_in_topics
+-- * Connexion au broker mqtt
+-- * execution init_trig
+-- * création des alarmes test_and_send
+-- * eventuellement execution mqtt_connected_callback
+--
+
 
 mqtt_client = mqtt.Client(mqtt_client_name, 120, mqtt_user, mqtt_pass)
 --mqtt_connected = false
@@ -43,14 +55,6 @@ function mqtt_connect()
                             print_log(topic .." : subscribed")
                         end
                         _dofile("init_trig")
-                        if mesure_period then
-                            tmr.alarm(4, mesure_period, tmr.ALARM_AUTO, function () 
-                                    _dofile("read_and_send")
-                                    if LOGGER then
-                                        check_logfile_size()
-                                    end
-                                end)
-                        end
                         if test_period then
                             tmr.alarm(5,test_period, tmr.ALARM_AUTO, function()
                                     _dofile("test_and_send")
@@ -65,20 +69,6 @@ function mqtt_connect()
         end)
 end
 
-function mqtt_publish(rep,topic,action)
-            print_log("publish ".. topic.. "=>" ..rep)
-            if not action then action = {} end
-            if mqtt_client:publish(topic,rep,
-                                action.qos or 0,
-                                action.retain or 0,
-                                action.callback) then
-                print_log("MQTT send : ok")
-            else
-                print_log("MQTT not send : mqtt error")
-            end
-            --tmr.delay(1000000) Pourquoi ca a ete mis??? Il ne faut pas !!!
-            collectgarbage()       
-    end
 
 mqtt_connect()
 print_log('Init_mqtt : ok')

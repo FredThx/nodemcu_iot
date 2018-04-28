@@ -28,3 +28,4 @@ for scl=1,7 do
             end
     end
 end
+print("That's all!")
