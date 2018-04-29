@@ -27,6 +27,8 @@ mcp.init = nil -- 952 bytes released
 DTH_pin = 4
 -- Capteur température DSx20
 DS1820_PIN = 3
+thermometres=_dofile("ds1820_reader")
+thermometres.init(DS1820_PIN)
 sensors = { 
     [string.char(40,255,213,74,1,21,4,230)] = "piscine"
 }
@@ -44,7 +46,7 @@ f_niveau = function(level)
 ------------------------------
 -- Modules a charger
 ------------------------------
-modules={"DTH_reader","ds1820_reader"}
+modules={"DTH_reader"}--,"ds1820_reader"}
 ------------------
 -- Params WIFI 
 ------------------
@@ -99,8 +101,8 @@ mqtt_out_topics[mqtt_base_topic.."humidite"]={
                 --qos = 0, retain = 0, callback = nil, 
                 manual = true}
 mqtt_out_topics["T-HOME/PISCINE/temperature"]={
-                message = function()
-                        return readDSSensors("piscine")
+                result_on_callback = function(callback)
+                        thermometres.read(sensors["piscine"],callback)
                     end,
                 --qos = 0, retain = 0, callback = nil, 
                 manual = true}

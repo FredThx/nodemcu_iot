@@ -20,7 +20,7 @@ do
     local channels = {}
     for channel = 0,2 do channels[channel]={} end
     
-    local init_rotary = function(channel, pina, pinb,nb_impulsion_per_detent,pinpress, longpress_time_ms, dblclick_time_ms)
+    local init_rotary = function(channel, pina, pinb)
         local ch = channels[channel]
         ch.ipd = nb_impulsion_per_detent or 1
         ch.count = 0
