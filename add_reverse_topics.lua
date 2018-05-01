@@ -5,7 +5,14 @@
 for topic in pairs(mqtt_out_topics) do
     if mqtt_out_topics[topic]["message"] then
         mqtt_in_topics[topic.."_"]={["SENDIT"]=function()
-                local no_err, rep = pcall(mqtt_out_topics[topic]["message"])
+				--TODO : fonctionnariser ça avec read_and_send (gain qques ko)
+				local no_err, rep
+				if type(mqtt_out_topics[topic]["message"])=="function" then
+					no_err, rep = pcall(mqtt_out_topics[topic]["message"])
+				else
+					no_err = true
+					rep = mqtt_out_topics[topic]["message"]
+				end
                 if no_err and rep then
                     mqtt_publish(rep, topic,mqtt_out_topics[topic])
                 else
