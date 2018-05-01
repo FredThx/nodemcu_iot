@@ -27,8 +27,9 @@ for topic in pairs(mqtt_out_topics) do
                             mqtt_publish(rep, topic ,mqtt_out_topics[topic])
                         end)
                  end}
-     end
-     print_log("Reverse topic "..topic.."_".." created.")
+		print_log("Reverse topic "..topic.."_".." created.")
+	 end
+     
     -- Add deamons on_change
     if mqtt_out_topics[topic]["on_change"] then
         mqtt_out_topics[topic]["on_change_value"]=nil
