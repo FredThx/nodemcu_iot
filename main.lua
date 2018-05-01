@@ -3,12 +3,12 @@
 -- Base sur ESP8266
 ----------------------------------------------------
 -- Utilisation des alarmes :
---  0   :   i2c display
---  1   :   wait_for_wifi_conn
---  2   :   test wifi
---  3   :   mqtt_connect()
---  4   :   _dofile("read_and_send")
---  5   :   _dofile("test_and_send")
+--  auto   :   i2c display
+--  auto   :   wait_for_wifi_conn
+--  auto   :   test wifi
+--  auto   :   mqtt_connect()
+--  auto   :   _dofile("read_and_send")
+--  auto   :   _dofile("test_and_send")
 --  6   :   libre pour le projet (ex : blink leb)
 ---------------------------------------------------
 

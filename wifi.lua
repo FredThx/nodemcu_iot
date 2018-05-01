@@ -3,7 +3,8 @@
 -- quand établie, execute on_wifi_connected()
 
 function wait_for_wifi_conn()
-   tmr.alarm (1, 10000, tmr.ALARM_AUTO, function()
+	local wifi_alarm = tmr.create()
+	wifi_alarm:alarm (10000, tmr.ALARM_AUTO, function()
       if wifi.sta.getip() == nil then
          wifi.setmode(wifi.STATION)
          local _SSID
@@ -29,7 +30,7 @@ function wait_for_wifi_conn()
             WIFI_INDEX = 1
          end
       else
-         tmr.stop (1)
+         wifi_alarm:stop()
          --print ("ESP8266 mode is: " .. wifi.getmode ( ))
          print_log ("The module MAC address is: " .. wifi.sta.getmac ( ))
          local _ssid = wifi.sta.getconfig()
@@ -52,7 +53,7 @@ if (type(SSID)=='string') then SSID = {SSID} end
 
 WIFI_INDEX = 1
 wait_for_wifi_conn()
-tmr.alarm(2,wifi_time_retry*60000,1,function()
+tmr.create():alarm(wifi_time_retry*60000,1,function()
     if wifi.sta.getip() == nil then
         wait_for_wifi_conn()
     end

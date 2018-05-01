@@ -73,7 +73,7 @@ function draw_texts()
     end
 end
 
-tmr.alarm(0,500, tmr.ALARM_AUTO, update_display)
+tmr.create():alarm(500, tmr.ALARM_AUTO, update_display)
 
 function disp_add_data(data)
     local t_data=cjson.decode(data)

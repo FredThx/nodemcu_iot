@@ -6,17 +6,23 @@
 -------------------------------------------------
 --  Ce fichier : paramètres pour nodemcu
 --               avec
---
+
+-------------------------------------------------
+-- Modules nécessaires dans le firmware :
+--    file, gpio, net, node,tmr, uart, wifi
+--    bit, mqtt, i2c
 -------------------------------------------------
 
 LOGGER = false
+WATCHDOG = true
+WATCHDOG_TIMEOUT = 30*60 -- 30 minutes
+MSG_DEBUG = true -- if true : send messages (ex : "MQTT send : ok")
+WEB_SERVEUR = true
 
+-- Hardware
 
+--nada
 
-------------------------------
--- Modules a charger
-------------------------------
-modules={}
 ------------------
 -- Params WIFI 
 ------------------
@@ -36,17 +42,21 @@ mqtt_client_name = HOST
 mqtt_base_topic = "T-HOME/TEST/"
 
 -- Messages MQTT sortants
-mesure_period = 1*60 * 1000
+mesure_period = 10*60 * 1000
 mqtt_out_topics = {}
-
+mqtt_out_topics[mqtt_base_topic.."42"]={
+                message = function()
+                        print("Envoie de 42!")
+                        return 42
+                    end}
+mqtt_out_topics[mqtt_base_topic.."8"]={
+                message = 8}
 -- Messages MQTT sortants sur test
 test_period = 1000
 mqtt_test_topics = {}
-               
 -- Messages sur trigger GPIO
-mqtt_trig_topics = {}                
+mqtt_trig_topics = {}     
 -- Actions sur messages MQTT entrants
-mqtt_in_topics = {}
-
+mqtt_in_topics = {}                        
 --Gestion du display : mqtt(json)=>affichage
 disp_texts = {}

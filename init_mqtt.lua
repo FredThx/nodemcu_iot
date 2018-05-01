@@ -8,7 +8,7 @@ mqtt_client = mqtt.Client(mqtt_client_name, 120, mqtt_user, mqtt_pass)
 mqtt_client:on("offline", function(con) 
     print_log ("MQTT offline")
     --todo : stop the triggers
-    tmr.stop(4)
+    --tmr.stop(4) C'est a read_and_send de gérer la perte de mqtt!
     mqtt_connected = false
     mqtt_connect()
     end)
@@ -30,10 +30,11 @@ mqtt_client:on("message", function(conn, topic, data)
 end)
 
 function mqtt_connect()
-    tmr.alarm(3, 1000, 1, function()
+	local mqtt_connect_alarm = tmr.create()
+    mqtt_connect_alarm:alarm(1000, 1, function() -- avant : 3
             if mqtt_connected then
                 print_log("MQTT Connected.")
-                tmr.stop(3)
+                mqtt_connect_alarm:stop()
             else
                 print_log("MQTT Connection...")
                 mqtt_client:connect(mqtt_host, mqtt_port, 0, function(conn)
@@ -44,7 +45,7 @@ function mqtt_connect()
                         end
                         _dofile("init_trig")
                         if mesure_period then
-                            tmr.alarm(4, mesure_period, tmr.ALARM_AUTO, function () 
+                            tmr.create():alarm(mesure_period, tmr.ALARM_AUTO, function () -- avant : 4
                                     _dofile("read_and_send")
                                     if LOGGER then
                                         check_logfile_size()
@@ -52,7 +53,7 @@ function mqtt_connect()
                                 end)
                         end
                         if test_period then
-                            tmr.alarm(5,test_period, tmr.ALARM_AUTO, function()
+                            tmr.create():alarm(test_period, tmr.ALARM_AUTO, function() -- avant : 5
                                     _dofile("test_and_send")
                                 end)
                         end
