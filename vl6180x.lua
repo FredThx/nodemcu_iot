@@ -3,7 +3,8 @@
 -- usage:
 --  distance_sensor = require 'vl6180x'
 --  distance_sensor.init(sda_pin, scl_pin [,i2c_addr])
---  distance = distance_sensor.distance(addr)
+--  distance.init = nil -- to free memory
+--  distance = distance_sensor.distance()
 --
 -------------------------------------------------
 -- Modules nécessaires dans le firmware :

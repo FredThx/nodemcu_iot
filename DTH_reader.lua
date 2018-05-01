@@ -1,3 +1,14 @@
+-- DTH module
+--
+-- Conservé uniquement pour compatibilité avec anciens projets
+--
+-------------------------------------------------
+-- Modules nécessaires dans le firmware :
+--    dth
+-------------------------------------------------
+--
+-- En plus erreur de frappe : device = DHT et non DTH!!!
+
 --local dht= require 'dht'
 function readDht()    
     --local status,temp,humi,temp_decimial,humi_decimial = dht.read(DTH_pin)

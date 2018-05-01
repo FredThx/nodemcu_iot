@@ -1,7 +1,7 @@
 -- MCP3008 module
 --
 -- usage :
---  mcp = dofile('mcp3008.lua')
+--  mcp = require 'mcp3008'
 --  mcp.init(6,7,5,8) or mcp.init() to use default
 --  mcp.init = nil -- to free memory
 --  chanel = 1 -- (0-7)

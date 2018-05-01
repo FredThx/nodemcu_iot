@@ -24,7 +24,7 @@ mcp = _dofile("mcp3008")
 mcp.init(7,6,8,5)
 mcp.init = nil -- 952 bytes released
 -- Capteur DTH11-22
-DTH_pin = 4
+DHT_pin = 4
 -- Capteur température DSx20
 DS1820_PIN = 3
 thermometres=_dofile("ds1820_reader")
@@ -43,10 +43,7 @@ f_niveau = function(level)
                         return "HAUT"
                     end
                 end
-------------------------------
--- Modules a charger
-------------------------------
-modules={"DTH_reader"}--,"ds1820_reader"}
+
 ------------------
 -- Params WIFI 
 ------------------
@@ -88,15 +85,15 @@ mqtt_out_topics[mqtt_base_topic.."pluie"]={
                 manual = true}
 mqtt_out_topics[mqtt_base_topic.."temperature"]={
                 message = function()
-                        local t,h=readDht()    
-                        return t
+						local status,temp,humi = dht.read(DHT_pin)
+                        return temp
                     end,
                 --qos = 0, retain = 0, callback = nil, 
                 manual = true}
 mqtt_out_topics[mqtt_base_topic.."humidite"]={
                 message = function()
-                        local t,h=readDht()
-                        return h
+                        local status,temp,humi = dht.read(DHT_pin)
+                        return humi
                     end,
                 --qos = 0, retain = 0, callback = nil, 
                 manual = true}
