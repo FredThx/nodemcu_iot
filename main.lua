@@ -1,22 +1,17 @@
 -- projet Standart NodeMCU & MQTT
 -- 
 -- Base sur ESP8266
-----------------------------------------------------
--- Utilisation des alarmes :
---  auto   :   i2c display
---  auto   :   wait_for_wifi_conn
---  auto   :   test wifi
---  auto   :   mqtt_connect()
---  auto   :   _dofile("read_and_send")
---  auto   :   _dofile("test_and_send")
---  6   :   libre pour le projet (ex : blink leb)
----------------------------------------------------
+--
 
-_dofile("params")
-if MSG_DEBUG == nil then MSG_DEBUG = true end
+
+-- Lecture des parametres propres du projets
+
+App = require("params")
+
+if App.msg_debug == nil then App.msg_debug = true end
 
 print_log("******************************")
-print_log("**   " .. HOST.. "              **")
+print_log("**   " .. App.mqtt.client_name .. "              **")
 print_log("******************************")
 print_log("")
 
@@ -27,8 +22,8 @@ if LOGGER then
     print_log("----- NODE RESTART -----")
 end
 
-if WATCHDOG then
-    tmr.softwd(WATCHDOG_TIMEOUT or 3600)
+if App.watchdog then
+    tmr.softwd(App.watchdog.timeout or 3600)
 end
 
 _dofile("add_reverse_topics")

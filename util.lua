@@ -11,7 +11,7 @@ end
         
 
 print_log = function(txt)
-    if MSG_DEBUG then
+    if App.msg_debug then
         print(txt)
     end
 end
