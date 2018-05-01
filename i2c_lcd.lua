@@ -27,24 +27,31 @@
 --
 -------------------------------------------------
 -- Modules nécessaires dans le firmware :
---    i2c, u8g(avec font ssd1306_128x64_i2c), cjson | sjson
+--    i2c, u8g(avec font ssd1306_128x64_i2c), sjson
 -------------------------------------------------
+--
+-- TODO : faire un seul module pour les écrans (lcd et oled)
+-- 
 
-i2c.setup(0, pin_sda, pin_scl, i2c.SLOW)
+local M
 
--- ( cjson a été remplacé par sjson dans certains firmwares) ...
-if not _G.cjson then _G.cjson = sjson end
+do
+	local lcd = require("lcd1602.lua")
+	function M.init()
+		i2c.setup(0, pin_sda, pin_scl, i2c.SLOW)
+	end
+	
+	M.disp_clear = lcd.clear
 
-lcd = dofile("lcd1602.lua")()
-disp_clear = lcd.clear
-
-function disp_add_data(data)
-    local t_data=cjson.decode(data)
-    if t_data.clear then lcd.clear() end
-    if t_data.led~=nil then lcd.light(t_data.led) end
-    if t_data.text~=nil then
-        if not t_data.column then t_data.column = 0 end
-        if not t_data.row then t_data.row = 0 end
-        lcd.put(lcd.locate( t_data.row, t_data.column), ""..t_data.text)
-    end
+	function M.disp_add_data(data)
+		local t_data=sjson.decode(data)
+		if t_data.clear then lcd.clear() end
+		if t_data.led~=nil then lcd.light(t_data.led) end
+		if t_data.text~=nil then
+			if not t_data.column then t_data.column = 0 end
+			if not t_data.row then t_data.row = 0 end
+			lcd.put(lcd.locate( t_data.row, t_data.column), ""..t_data.text)
+		end
+	end
 end
+return M

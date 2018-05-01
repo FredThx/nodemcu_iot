@@ -36,7 +36,7 @@ if App.mqtt_trig_topics then
                                     local msg
                                     no_err, msg = pcall(trig.message)
                                     print(topic.." : "..msg)
-									mqtt_publish(msg, topic, trig)
+									App.mqtt_publish(msg, topic, trig)
                                     trig.counter = 0
                                 end
                                 trig.actif = true
@@ -53,7 +53,7 @@ if App.mqtt_trig_topics then
                                 local msg
                                 no_err, msg = pcall(trig.message)
                                 print(topic.." : "..msg)
-								mqtt_publish(msg, topic, trig)
+								App.mqtt_publish(msg, topic, trig)
                                 trig.counter = 0
                             end
                         end)
@@ -67,7 +67,7 @@ if App.mqtt_trig_topics then
                                 local msg
                                 no_err, msg = pcall(trig.message)
                                 print(topic.." : "..msg)
-                                mqtt_publish(msg, topic, trig)
+                                App.mqtt_publish(msg, topic, trig)
                                 trig.actif = true
                             else
                                 trig.actif = false
@@ -80,7 +80,7 @@ if App.mqtt_trig_topics then
                             local msg
                             no_err, msg = pcall(trig.message)
                             print(topic.." : "..msg)
-                            mqtt_publish(msg, topic, trig)
+                            App.mqtt_publish(msg, topic, trig)
                         end)
                     end
                 end
@@ -94,7 +94,7 @@ if App.mqtt_trig_topics then
                                 trig.counter = trig.counter+1
                                 if trig.counter>trig.divisor then
                                     print(topic.." : "..trig.message)
-                                    mqtt_publish(trig.message, topic, trig)
+                                    App.mqtt_publish(trig.message, topic, trig)
                                     trig.counter = 0
                                 end
                                 trig.actif = true
@@ -109,7 +109,7 @@ if App.mqtt_trig_topics then
                             trig.counter = trig.counter+1
                             if trig.counter>trig.divisor then
                                 print(topic.." : "..trig.message)
-								mqtt_publish(trig.message, topic, trig)
+								App.mqtt_publish(trig.message, topic, trig)
                                 trig.counter = 0
                             end
                         end)
@@ -121,7 +121,7 @@ if App.mqtt_trig_topics then
                         gpio.trig(trig.pin, "both" ,function(level)
                             if trig.actif then
                                 print(topic.." : "..trig.message)
-								mqtt_publish(trig.message, topic, trig)
+								App.mqtt_publish(trig.message, topic, trig)
                                 trig.actif = true
                             else
                                 trig.actif = false
@@ -132,7 +132,7 @@ if App.mqtt_trig_topics then
                         print_log("     Valeur sans diviseur")
                         gpio.trig(trig.pin, trig.type ,function(level)
                             print(topic.." : "..trig.message)
-							mqtt_publish(trig.message, topic, trig)
+							App.mqtt_publish(trig.message, topic, trig)
                         end)
                     end
                 end
@@ -147,7 +147,7 @@ if App.mqtt_trig_topics then
                             trig.counter = trig.counter+1
                             if trig.counter>trig.divisor then
                                 print(topic.." : "..level)
-								mqtt_publish(level, topic, trig)
+								App.mqtt_publish(level, topic, trig)
                                 trig.counter = 0
                             end
                             trig.actif = true
@@ -162,7 +162,7 @@ if App.mqtt_trig_topics then
                         trig.counter = trig.counter+1
                         if trig.counter>trig.divisor then
                             print(topic.." : "..level)
-                            mqtt_publish(level, topic, trig)
+                            App.mqtt_publish(level, topic, trig)
                             trig.counter = 0
                         end
                     end)
@@ -174,7 +174,7 @@ if App.mqtt_trig_topics then
                     gpio.trig(trig.pin, "both" ,function(level)
                         if trig.actif then
                             print(topic.." : "..level)
-                            mqtt_publish(level, topic, trig)
+                            App.mqtt_publish(level, topic, trig)
                             trig.actif = false
                         else
                             trig.actif = true
@@ -185,7 +185,7 @@ if App.mqtt_trig_topics then
                     print_log("     Level sans diviseur")
                     gpio.trig(trig.pin, trig.type ,function(level)
                         print(topic.." : "..level)
-                        mqtt_publish(level, topic, trig)
+                        App.mqtt_publish(level, topic, trig)
                     end)
                 end
             end

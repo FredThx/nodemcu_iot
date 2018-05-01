@@ -14,7 +14,7 @@ for topic in pairs(App.mqtt_out_topics) do
 					rep = App.mqtt_out_topics[topic]["message"]
 				end
                 if no_err and rep then
-                    mqtt_publish(rep, topic,App.mqtt_out_topics[topic])
+                    App.mqtt_publish(rep, topic,App.mqtt_out_topics[topic])
                 else
                     print_log("MQTT not send.")
                 end
@@ -24,7 +24,7 @@ for topic in pairs(App.mqtt_out_topics) do
     if App.mqtt_out_topics[topic]["result_on_callback"] then
         App.mqtt_in_topics[topic.."_"]={["SENDIT"]=function()
                 pcall(App.mqtt_out_topics[topic]["result_on_callback"], function(rep)
-                            mqtt_publish(rep, topic ,App.mqtt_out_topics[topic])
+                            App.mqtt_publish(rep, topic ,App.mqtt_out_topics[topic])
                         end)
                  end}
 		print_log("Reverse topic "..topic.."_".." created.")
@@ -63,24 +63,11 @@ if App.mqtt.base_topic then
                 end
 	-- pour tester si vivant
 	App.mqtt_in_topics[App.mqtt.base_topic.."_HELLO"]= function(data)
-			   mqtt_client:publish(
-					App.mqtt.base_topic.."HELLO",
-					App.mqtt.client_name,
-					0,
-					0)
+				App.mqtt_publish(App.mqtt.client_name, App.mqtt.base_topic.."HELLO")
 			end
 end
 
--- watchdog
-if WATCHDOG then
-    App.mqtt_in_topics[App.mqtt.base_topic.."_WATCHDOG"]={
-        ["INIT"]=function()
-                tmr.softwd(WATCHDOG_TIMEOUT or 3600)
-            end}
-    print_log("Mqtt watchdog created.")
-end
 print_log('reverse mqtt topics : ok')
-
 
 -- Modification App.mqtt_test_topic si pas table de table
 for topic, tests in pairs(App.mqtt_test_topics) do

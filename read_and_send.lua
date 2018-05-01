@@ -14,14 +14,14 @@ for topic, action in pairs(App.mqtt_out_topics) do
             end
             print_log(topic, ":" , rep)
             if no_err and rep then
-                mqtt_publish(rep, topic,action)
+                App.mqtt_publish(rep, topic,action)
             else
                 print_log("MQTT not send : action error")
             end
         end
         if action.result_on_callback then --callback function when datas is generate by callback function (ex ds18b20)
             no_err, rep = pcall(action.result_on_callback, function(result)
-                            mqtt_publish(result, topic,action)
+                            App.mqtt_publish(result, topic,action)
                         end)
         end
     end

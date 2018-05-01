@@ -63,7 +63,7 @@ do
 	App.mqtt_out_topics[App.mqtt.base_topic.."8"]={
 					message = 8}
 	-- Messages MQTT sortants sur test
-	App.test_period = 1000
+	App.test_period = 10000
 	App.mqtt_test_topics = {}
 	App.mqtt_test_topics[App.mqtt.base_topic.."TEST"] = {
 			test = function()

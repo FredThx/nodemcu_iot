@@ -23,7 +23,7 @@ for topic, tests in pairs(App.mqtt_test_topics) do
 				value = test["value"]
 			end
             print(topic, ":" , value)
-            mqtt_publish(value,topic,value)
+            App.mqtt_publish(value,topic,value)
         end
     end
 end

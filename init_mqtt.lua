@@ -24,7 +24,7 @@ App.mqtt.client:on("message", function(conn, topic, data)
     if App.mqtt_in_topics[topic]~= nil then
         if type(App.mqtt_in_topics[topic])=='function' then
             rep = App.mqtt_in_topics[topic](data)
-			if rep then mqtt_publish(rep,topic.."_") end
+			if rep then App.mqtt_publish(rep,topic.."_") end
         elseif type(App.mqtt_in_topics[topic])=='table' then
             if App.mqtt_in_topics[topic][data]~= nil then
                 if type(App.mqtt_in_topics[topic][data])=='function' then
@@ -33,7 +33,7 @@ App.mqtt.client:on("message", function(conn, topic, data)
 					rep = App.mqtt_in_topics[topic][data]
 				end
             end
-			if rep then mqtt_publish(rep,topic.."_",App.mqtt_in_topics[topic]) end
+			if rep then App.mqtt_publish(rep,topic.."_",App.mqtt_in_topics[topic]) end
         end
     end
 end)

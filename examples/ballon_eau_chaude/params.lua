@@ -12,76 +12,78 @@
 --                    - une LED
 -------------------------------------------------
 
-LOGGER = false
+local App = {}
 
--- Capteur température DSx20
-DS1820_PIN = 3
-sensors = { 
-    [string.char(40,255,182,97,80,20,0,40)] = "ballon"
-}
--- Entree débimetre
-INPUT_PIN = 7
--- LED pour renvoie information CONSO enregistree
-LED_PIN = 1
+do
+	App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
+	App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
 
-------------------------------
--- Modules a charger
-------------------------------
-modules={"ds1820_reader"}
-------------------
--- Params WIFI 
-------------------
-SSID = {"WIFI_THOME1",'WIFI_THOME2'}
-PASSWORD = "plus33324333562"
-HOST = "NODE-BALLON"
-wifi_time_retry = 10 -- minutes
+	-- HARDWARE	
 
---------------------
--- Params MQTT
---------------------
-mqtt_host = "192.168.10.155"
-mqtt_port = 1883
-mqtt_user = "fredthx"
-mqtt_pass = "GaZoBu"
-mqtt_client_name = HOST
-mqtt_base_topic = "T-HOME/BALLON/"
+	-- Capteur température DSx20
+	DS1820_PIN = 3
+	thermometres = require("ds1820_reader")
+	thermometres.init(DS1820_PIN)
+	--sensors = {[string.char(40,255,182,97,80,20,0,40)] = "ballon"}
+		
+	-- Entree débimetre
+	INPUT_PIN = 7
+	-- LED pour renvoie information CONSO enregistree
+	LED_PIN = 1
 
--- Messages MQTT sortants
-mesure_period = 10*60 * 1000
-mqtt_out_topics = {}
-mqtt_out_topics[mqtt_base_topic .. "temperature"]={
-                message = function()
-                        t = readDSSensors("ballon")
-                        return t
-                    end,
-                qos = 0, retain = 0, callback = nil, manual = true}
--- Messages MQTT sortants sur test
-test_period = 1000
-mqtt_test_topics = {}
-               
--- Messages sur trigger GPIO
-mqtt_trig_topics = {}                
-mqtt_trig_topics[mqtt_base_topic.."CONSO"]={
-                pin = INPUT_PIN,
-                pullup = false,
-                type = "both", -- or "down", "both", "low", "high"
-                qos = 0, retain = 0, callback = nil,
-                message = 1}
--- Actions sur messages MQTT entrants
-mqtt_in_topics = {}
-mqtt_in_topics[mqtt_base_topic.."LED"]={
-            ["ON"]=function()
-                        gpio.write(LED_PIN,gpio.HIGH)
-                    end,
-            ["OFF"]=function()
-                        gpio.write(LED_PIN,gpio.LOW)
-                    end,
-            ["BLINK"]=function()
-                        gpio.write(LED_PIN,gpio.HIGH)
-                        tmr.alarm(6,500,tmr.ALARM_SINGLE, function()
-                                gpio.write(LED_PIN,gpio.LOW)
-                            end)
-                    end}
+	------------------
+	-- Params WIFI 
+	------------------
+	App.net = {
+			ssid = {"WIFI_THOME1",'WIFI_THOME2'},
+			password = "plus33324333562",
+			wifi_time_retry = 10, -- minutes
+			}
 
---Gestion du display : mqtt(json)=>affichage
-disp_texts = {}
+	--------------------
+	-- Params MQTT
+	--------------------
+	App.mqtt = {
+		host = "192.168.10.155",
+		port = 1883,
+		user = "fredthx",
+		pass = "GaZoBu",
+		client_name = "NODE-BALLON",
+		base_topic = "T-HOME/BALLON/"
+	}
+	
+	-- Messages MQTT sortants
+	App.mesure_period = 10*60 * 1000
+	App.mqtt_out_topics = {}
+	App.mqtt_out_topics[mqtt_base_topic .. "temperature"]={
+						result_on_callback = function(callback)
+								thermometres.read(nil,callback)
+							end,
+						qos = 0, retain = 0, callback = nil}
+
+	-- Messages sur trigger GPIO
+	App.mqtt_trig_topics = {}                
+	App.mqtt_trig_topics[mqtt_base_topic.."CONSO"]={
+					pin = INPUT_PIN,
+					pullup = false,
+					type = "both", -- or "down", "both", "low", "high"
+					qos = 0, retain = 0, callback = nil,
+					message = 1}
+	-- Actions sur messages MQTT entrants
+	App.mqtt_in_topics = {}
+	App.mqtt_in_topics[mqtt_base_topic.."LED"]={
+				["ON"]=function()
+							gpio.write(LED_PIN,gpio.HIGH)
+						end,
+				["OFF"]=function()
+							gpio.write(LED_PIN,gpio.LOW)
+						end,
+				["BLINK"]=function()
+							gpio.write(LED_PIN,gpio.HIGH)
+							tmr.alarm(6,500,tmr.ALARM_SINGLE, function()
+									gpio.write(LED_PIN,gpio.LOW)
+								end)
+						end}
+end
+
+return App

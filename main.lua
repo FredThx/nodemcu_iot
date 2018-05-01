@@ -2,12 +2,12 @@
 -- 
 -- Base sur ESP8266
 --
-
-
 -- Lecture des parametres propres du projets
 
+-- Lecture du fichier parametres
 App = require("params")
 
+-- Debug
 if App.msg_debug == nil then App.msg_debug = true end
 
 print_log("******************************")
@@ -15,15 +15,21 @@ print_log("**   " .. App.mqtt.client_name .. "              **")
 print_log("******************************")
 print_log("")
 
-
+-- Ne pas utiliser....
 if App.logger then 
     _dofile("logger")
     node.output(logger,1)
     print_log("----- NODE RESTART -----")
 end
 
+-- Watchdog : si pas de message .\_WATCHDOG : INIT avant timeout  :reboot ESP
 if App.watchdog then
-    tmr.softwd(App.watchdog.timeout or 3600)
+    App.mqtt_in_topics[App.mqtt.base_topic.."_WATCHDOG"]={
+        ["INIT"]=function()
+                tmr.softwd(App.watchdog.timeout or 3600)
+            end}
+	App.mqtt_in_topics[App.mqtt.base_topic.."_WATCHDOG"]["INIT"]()
+    print_log("Mqtt watchdog created.")
 end
 
 _dofile("add_reverse_topics")
@@ -34,11 +40,9 @@ for key, reader in pairs(App.modules or {}) do
 end
 
 -- Fonction de publication des données (via mqtt et usb sérial)
-function mqtt_publish(rep,topic,action)
+function App.mqtt_publish(rep,topic,action)
             if not action then action = {} end
-            if type(rep)=="table" then
-                rep = sjson.encode(rep)
-            end
+            if type(rep)=="table" then rep = sjson.encode(rep) end
 			print_log("publish ".. topic.. "=>" ..rep)
 			if App.mqtt.connected then
 				if App.mqtt.client:publish(topic,rep,
@@ -49,17 +53,14 @@ function mqtt_publish(rep,topic,action)
 				else
 					print_log("MQTT not send : mqtt error")
 				end
-				--tmr.delay(1000000) Pourquoi ca a ete mis??? Il ne faut pas !!!
 				collectgarbage()       
 			end
-	        if action.usb then
-                print(rep)
-            end
+	        if action.usb then print(rep) end
     end
 	
 -- 	Creation du timer pour lecture et envoie des App.mqtt_out_topics
 if App.mesure_period then
-	tmr.create():alarm(App.mesure_period, tmr.ALARM_AUTO, function () -- avant : 4
+	tmr.create():alarm(App.mesure_period, tmr.ALARM_AUTO, function ()
 			_dofile("read_and_send")
 			if App.logger then
 				check_logfile_size()

@@ -11,89 +11,96 @@
 --                      - grove gesture en i2c
 -------------------------------------------------
 
-LOGGER = false
+local App = {}
 
---------------------------------------
--- PARAMETRES CAPTEURS - ACTIONEURS
---------------------------------------
+do
+	App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
+	App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
 
--- display et grove gesture en i2c
-pin_sda = 5 
-pin_scl = 6 
+	--------------------------------------
+	-- HARDWARE
+	--------------------------------------
 
-pin_bt = 1
+	-- display et grove gesture en i2c
+	local pin_sda = 5 
+	local pin_scl = 6 
+	i2c.setup(0, pin_sda, pin_scl, i2c.SLOW)
+	
+	-- Grove Gesture
+	local G = _dofile("paj7620")()
+	local GEST_TOPIC = mqtt_base_topic.."GESTE"
+	G.scan(6,100,function(c)
+			App.mqtt_publish(c,GEST_TOPIC)
+		end)
+	
+	-- LCD
+	local lcd = _dofile("i2c_lcd")
+	lcd.init()
+	
+	-- Button
+	local pin_bt = 1
 
---------------------------------------
--- Modules a charger
---------------------------------------
-modules={"i2c_lcd", "i2c_geste"}
+	--------------------------------------
+	-- Modules a charger
+	--------------------------------------
+	App.modules={"i2c_lcd", "i2c_geste"}
 
---------------------------------------
--- Params WIFI 
---------------------------------------
-SSID = {"WIFI_THOME1",'WIFI_THOME2'}
-PASSWORD = "plus33324333562"
-HOST = "NODE-CROQ"
-wifi_time_retry = 10 -- minutes
+	
+	------------------
+	-- Params WIFI 
+	------------------
+	App.net = {
+			ssid = {"WIFI_THOME1",'WIFI_THOME2'},
+			password = "plus33324333562",
+			wifi_time_retry = 10, -- minutes
+			}
 
-----------------------------------------
--- Params MQTT
-----------------------------------------
-mqtt_host = "192.168.10.155"
-mqtt_port = 1883
-mqtt_user = "fredthx"
-mqtt_pass = "GaZoBu"
-mqtt_client_name = HOST
-mqtt_base_topic = "T-HOME/CROQ/"
---Gestes
-GEST_TOPIC = mqtt_base_topic.."GESTE"
+	--------------------
+	-- Params MQTT
+	--------------------
+	App.mqtt = {
+		host = "192.168.10.155",
+		port = 1883,
+		user = "fredthx",
+		pass = "GaZoBu",
+		client_name = "NODE-CROQ",
+		base_topic = "T-HOME/CROQ/"
+	}
 
-----------------------------------------
--- Messages MQTT sortants
----------------------------------------- 
-mesure_period = 1*60 * 1000
-mqtt_out_topics = {}
-
--- Messages MQTT sortants sur test
-test_period = 1000
-test_init = false
-mqtt_test_topics = {}
-mqtt_test_topics[mqtt_base_topic.."INIT"]={{
-                test = function()
-                        if test_init then
-                            return false
-                        else
-                            test_init = true
-                            return true
-                        end
-                    end,
-                value = "INIT",
-                mqtt_repeat = false,
-                qos = 0, retain = 0, callback = nil}}
-----------------------------------------
--- Messages sur trigger GPIO
-----------------------------------------
-mqtt_trig_topics = {}
-mqtt_trig_topics[mqtt_base_topic.."BT"]={
-                pin = pin_bt,
-                pullup = true,
-                type = "down", -- or "down", "both", "low", "high"
-                qos = 0, retain = 0, callback = nil,
-                message = function()
-                        print("Bt pushed")
-                        --mqtt_in_topics[mqtt_base_topic.."RELAIS"]["CHANGE"]()
-                        -- TODO : régler problème de déclenchement intempestif quand relais activé via WIFI
-                        return gpio.read(pin_bt)
-                    end
-                }  
-----------------------------------------
--- Actions sur messages MQTT entrants
-----------------------------------------
-mqtt_in_topics = {}
-----------------------------------------
---Gestion du display : mqtt(json)=>affichage
-----------------------------------------
-mqtt_in_topics[mqtt_base_topic.."DISPLAY"]=function(data)
-                disp_add_data(data)
-            end
-            
+	-- Messages MQTT sortants sur test
+	App.test_period = 1000
+	test_init = false
+	App.mqtt_test_topics = {}
+	App.mqtt_test_topics[App.mqtt.base_topic.."INIT"]={{
+					test = function()
+							if test_init then
+								return false
+							else
+								test_init = true
+								return true
+							end
+						end,
+					value = "INIT",
+					mqtt_repeat = false,
+					qos = 0, retain = 0, callback = nil}}
+	----------------------------------------
+	-- Messages sur trigger GPIO
+	----------------------------------------
+	App.mqtt_trig_topics = {}
+	App.mqtt_trig_topics[App.mqtt.base_topic.."BT"]={
+					pin = pin_bt,
+					pullup = true,
+					type = "down", -- or "down", "both", "low", "high"
+					qos = 0, retain = 0, callback = nil,
+					message = function()
+							return gpio.read(pin_bt)
+						end
+					}  
+	----------------------------------------
+	--Gestion du display : mqtt(json)=>affichage
+	----------------------------------------
+	App.mqtt_in_topics[App.mqtt.base_topic.."DISPLAY"]=function(data)
+					lcd.disp_add_data(data)
+				end
+end
+return App

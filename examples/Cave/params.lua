@@ -10,56 +10,52 @@
 -------------------------------------------------
 -- Modules nécessaires dans le firmware :
 --    file, gpio, net, node,tmr, uart, wifi
---    bit, mqtt, dht
+--    mqtt, dht
 -------------------------------------------------
------------------
 
--- Capteur DTH11-22
-DTH_pin = 4
 
-------------------------------
--- Modules a charger
-------------------------------
-modules={"DTH_reader"}
+local App = {}
 
-------------------
--- Params WIFI 
-------------------
-SSID = {"WIFI_THOME1","WIFI_THOME2"}
-PASSWORD = "plus33324333562"
-HOST = "NODE-CAVE"
-wifi_time_retry = 10 -- minutes
+do
+	App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
+	App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
 
---------------------
--- Params MQTT
---------------------
-mqtt_host = "192.168.10.155"
-mqtt_port = 1883
-mqtt_user = "fredthx"
-mqtt_pass = "GaZoBu"
-mqtt_client_name = HOST
-mqtt_base_topic = "T-HOME/CAVE/"
+	-- Capteur DTH11-22
+	DHT_pin = 4
 
--- Messages MQTT sortants
-mesure_period = 10*60 * 1000
-mqtt_out_topics = {}
-mqtt_out_topics[mqtt_base_topic.."temperature"]={
-                message = function()
-                        t,h=readDht()    
-                        return t
-                    end,
-                qos = 0, retain = 0, callback = nil}
-mqtt_out_topics[mqtt_base_topic.."humidite"]={
-                message = function()
-                        t,h=readDht()
-                        return h
-                    end,
-                qos = 0, retain = 0, callback = nil}
--- Actions sur messages MQTT entrants
-mqtt_in_topics = {}
--- Messages MQTT sortants sur test
-test_period = 1000
-mqtt_test_topics = {}
--- Messages sur trigger GPIO
-mqtt_trig_topics = {}
-disp_texts = {}
+	------------------
+	-- Params WIFI 
+	------------------
+	App.net = {
+			ssid = {"WIFI_THOME1",'WIFI_THOME2'},
+			password = "plus33324333562",
+			wifi_time_retry = 10, -- minutes
+			}
+
+	--------------------
+	-- Params MQTT
+	--------------------
+	App.mqtt = {
+		host = "192.168.10.155",
+		port = 1883,
+		user = "fredthx",
+		pass = "GaZoBu",
+		client_name = "NODE-CAVE",
+		base_topic = "T-HOME/CAVE/"
+	}
+
+	-- Messages MQTT sortants
+	App.mesure_period = 10*60 * 1000
+	App.mqtt_out_topics = {}
+	App.mqtt_out_topics[mqtt_base_topic.."temperature"]={
+					message = function()
+							local status,temp,humi = dht.read(DTH_pin)
+							return temp
+						end}
+	App.mqtt_out_topics[mqtt_base_topic.."humidite"]={
+					message = function()
+							local status,temp,humi = dht.read(DTH_pin)
+							return humi
+						end}
+end
+return App
