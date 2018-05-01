@@ -1,5 +1,13 @@
--- Initialisation MQTT
+-- Initialisation du client MQTT
+--
+-- Client : App.mqtt.client
+--
+-- Functions :
+--			- on("offline") : reconnecte serveur 
+--			- on("message") : A la reception des mmessages : execution des App.mqtt_in_topics
+-------------------------------------------------------------------------------------------------
 
+-- Creation du client mqtt avec 120s de keepalive
 App.mqtt.client = mqtt.Client(App.mqtt.client_name, 120, App.mqtt.user, App.mqtt.pass)
 
 -- Deamon quand perte serveur mqtt
@@ -30,9 +38,10 @@ App.mqtt.client:on("message", function(conn, topic, data)
     end
 end)
 
+-- Connecte (ou reconnecte) le client mqtt
 function mqtt_connect()
 	local mqtt_connect_alarm = tmr.create()
-    mqtt_connect_alarm:alarm(1000, 1, function() -- avant : 3
+    mqtt_connect_alarm:alarm(1000, 1, function()
             if App.mqtt.connected then
                 print_log("MQTT Connected.")
                 mqtt_connect_alarm:stop()
@@ -44,44 +53,15 @@ function mqtt_connect()
                             App.mqtt.client:subscribe(topic,1)
                             print_log(topic .." : subscribed")
                         end
-                        _dofile("init_trig")
-                        if App.mesure_period then
-                            tmr.create():alarm(App.mesure_period, tmr.ALARM_AUTO, function () -- avant : 4
-                                    _dofile("read_and_send")
-                                    if App.logger then
-                                        check_logfile_size()
-                                    end
-                                end)
-                        end
-                        if App.test_period then
-                            tmr.create():alarm(App.test_period, tmr.ALARM_AUTO, function() -- avant : 5
-									_dofile("test_and_send")
-                                end)
-                        end
-                        if mqtt_connected_callback then
-                            print_log('mqtt_connected_callback called')
-                            pcall (mqtt_connected_callback)
+                        if App.mqtt.connected_callback then
+                            print_log('mqtt_connected_callback call...')
+                            pcall (App.mqtt.connected_callback)
                         end
                     end)
             end
         end)
 end
 
-function mqtt_publish(rep,topic,action)
-            print_log("publish ".. topic.. "=>" ..rep)
-            if not action then action = {} end
-            if App.mqtt.client:publish(topic,rep,
-                                action.qos or 0,
-                                action.retain or 0,
-                                action.callback) then
-                print_log("MQTT send : ok")
-            else
-                print_log("MQTT not send : mqtt error")
-            end
-            --tmr.delay(1000000) Pourquoi ca a ete mis??? Il ne faut pas !!!
-            collectgarbage()       
-    end
-
+-- 1st connexion
 mqtt_connect()
-print_log('Init_mqtt : ok')
                 

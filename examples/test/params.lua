@@ -23,8 +23,10 @@ do
 
 	-- Hardware
 
-	--nada
-
+	local my_device = { read = function() return 42 end}
+	
+	App.modules = {} -- for compatibility with old devices
+	
 	------------------
 	-- Params WIFI 
 	------------------
@@ -33,7 +35,6 @@ do
 			password = "plus33324333562",
 			wifi_time_retry = 10, -- minutes
 			}
-	--HOST = "NODE-TEST"
 
 	--------------------
 	-- Params MQTT
@@ -47,24 +48,29 @@ do
 		base_topic = "T-HOME/TEST/"
 	}
 	
+	App.mqtt.connected_callback = function()
+							print("La connexion MQTT est ok.")
+						end
+	
 	-- Messages MQTT sortants
 	App.mesure_period = 10*60 * 1000
 	App.mqtt_out_topics = {}
 	App.mqtt_out_topics[App.mqtt.base_topic.."42"]={
 					message = function()
-							print("Envoie de 42!")
-							return 42
+							print("Lecture de my_device")
+							return my_device.read()
 						end}
 	App.mqtt_out_topics[App.mqtt.base_topic.."8"]={
 					message = 8}
 	-- Messages MQTT sortants sur test
-	App.test_period = 10000
+	App.test_period = 1000
 	App.mqtt_test_topics = {}
 	App.mqtt_test_topics[App.mqtt.base_topic.."TEST"] = {
 			test = function()
 					return false or true
                  end,
 			value = "Cest vrai",
+            usb = true,
 			mqtt_repeat = false,
 			qos = 0, retain = 0, callback = nil}	
 	-- Messages sur trigger GPIO
@@ -89,7 +95,7 @@ do
             ["QUI"]=function()
                         return "Cest moi"
                     end,
-					qos = 0, retrain = 0, callback = function() print("Bien envoyé") end
+					qos = 0, retrain = 0, --callback = function() print("Bien envoyé") end
 			}
 	App.mqtt_in_topics[App.mqtt.base_topic.."IN_F"]= function(data)
 														print(data .. "received.")
