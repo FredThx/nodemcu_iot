@@ -2,7 +2,7 @@
 
 -- Lecture des capteurs & envoie données via mqtt
 
-for topic, action in pairs(mqtt_out_topics) do
+for topic, action in pairs(App.mqtt_out_topics) do
     if not action.manual then
         local no_err, rep
         if action.message then

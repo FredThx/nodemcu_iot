@@ -2,49 +2,49 @@
 -- exemple /T-HOME/TEST/temperature est le topic dans lequel est envoyé toutes les x minutes
 --         /T-HOME/TEST/temperature_ est le topic de demande de la température (valeur = "SENDIT")
 
-for topic in pairs(mqtt_out_topics) do
-    if mqtt_out_topics[topic]["message"] then
-        mqtt_in_topics[topic.."_"]={["SENDIT"]=function()
+for topic in pairs(App.mqtt_out_topics) do
+    if App.mqtt_out_topics[topic]["message"] then
+        App.mqtt_in_topics[topic.."_"]={["SENDIT"]=function()
 				--TODO : fonctionnariser ça avec read_and_send (gain qques ko)
 				local no_err, rep
-				if type(mqtt_out_topics[topic]["message"])=="function" then
-					no_err, rep = pcall(mqtt_out_topics[topic]["message"])
+				if type(App.mqtt_out_topics[topic]["message"])=="function" then
+					no_err, rep = pcall(App.mqtt_out_topics[topic]["message"])
 				else
 					no_err = true
-					rep = mqtt_out_topics[topic]["message"]
+					rep = App.mqtt_out_topics[topic]["message"]
 				end
                 if no_err and rep then
-                    mqtt_publish(rep, topic,mqtt_out_topics[topic])
+                    mqtt_publish(rep, topic,App.mqtt_out_topics[topic])
                 else
                     print_log("MQTT not send.")
                 end
             end}
         print_log("Reverse topic "..topic.."_".." created.")
     end
-    if mqtt_out_topics[topic]["result_on_callback"] then
-        mqtt_in_topics[topic.."_"]={["SENDIT"]=function()
-                pcall(mqtt_out_topics[topic]["result_on_callback"], function(rep)
-                            mqtt_publish(rep, topic ,mqtt_out_topics[topic])
+    if App.mqtt_out_topics[topic]["result_on_callback"] then
+        App.mqtt_in_topics[topic.."_"]={["SENDIT"]=function()
+                pcall(App.mqtt_out_topics[topic]["result_on_callback"], function(rep)
+                            mqtt_publish(rep, topic ,App.mqtt_out_topics[topic])
                         end)
                  end}
 		print_log("Reverse topic "..topic.."_".." created.")
 	 end
      
     -- Add deamons on_change
-    if mqtt_out_topics[topic]["on_change"] then
-        mqtt_out_topics[topic]["on_change_value"]=nil
-        mqtt_test_topics[topic]={{
+    if App.mqtt_out_topics[topic]["on_change"] then
+        App.mqtt_out_topics[topic]["on_change_value"]=nil
+        App.mqtt_test_topics[topic]={{
                 test = function()
-                            local no_err, value = pcall(mqtt_out_topics[topic].message)
-                            if no_err and value ~= mqtt_out_topics[topic].on_change_value then
-                                mqtt_out_topics[topic].on_change_value = value
+                            local no_err, value = pcall(App.mqtt_out_topics[topic].message)
+                            if no_err and value ~= App.mqtt_out_topics[topic].on_change_value then
+                                App.mqtt_out_topics[topic].on_change_value = value
                                 return true
                             else
                                 return false
                             end
                         end,
                     value = function()
-                                local no_err, value = pcall(mqtt_out_topics[topic].message)
+                                local no_err, value = pcall(App.mqtt_out_topics[topic].message)
                                 if no_err then
                                     return value
                                 end
@@ -56,16 +56,16 @@ for topic in pairs(mqtt_out_topics) do
 end
 
 -- deamons systems : 
-if mqtt_base_topic then
+if App.mqtt.base_topic then
 	-- pour executer du code via MQTT
-    mqtt_in_topics[mqtt_base_topic.."_LUA"]= function(data)
+    App.mqtt_in_topics[App.mqtt.base_topic.."_LUA"]= function(data)
                    node.input(data)
                 end
 	-- pour tester si vivant
-	mqtt_in_topics[mqtt_base_topic.."_HELLO"]= function(data)
+	App.mqtt_in_topics[App.mqtt.base_topic.."_HELLO"]= function(data)
 			   mqtt_client:publish(
-					mqtt_base_topic.."HELLO",
-					mqtt_client_name,
+					App.mqtt.base_topic.."HELLO",
+					App.mqtt.client_name,
 					0,
 					0)
 			end
@@ -73,10 +73,18 @@ end
 
 -- watchdog
 if WATCHDOG then
-    mqtt_in_topics[mqtt_base_topic.."_WATCHDOG"]={
+    App.mqtt_in_topics[App.mqtt.base_topic.."_WATCHDOG"]={
         ["INIT"]=function()
                 tmr.softwd(WATCHDOG_TIMEOUT or 3600)
             end}
     print_log("Mqtt watchdog created.")
 end
 print_log('reverse mqtt topics : ok')
+
+
+-- Modification App.mqtt_test_topic si pas table de table
+for topic, tests in pairs(App.mqtt_test_topics) do
+	if type(tests[1]) ~= 'table' then
+		App.mqtt_test_topics[topic] = {tests}
+	end
+end

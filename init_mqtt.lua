@@ -13,14 +13,19 @@ App.mqtt.client:on("offline", function(con)
 App.mqtt.client:on("message", function(conn, topic, data)
     if data == nil then data = "" end
     print_log("Reception MQTT =>" .. topic .. ":" .. data)
-    if mqtt_in_topics[topic]~= nil then
-        if type(mqtt_in_topics[topic])=='function' then
-            mqtt_in_topics[topic](data)
-        end
-        if type(mqtt_in_topics[topic])=='table' then
-            if mqtt_in_topics[topic][data]~= nil then
-                mqtt_in_topics[topic][data]()
+    if App.mqtt_in_topics[topic]~= nil then
+        if type(App.mqtt_in_topics[topic])=='function' then
+            rep = App.mqtt_in_topics[topic](data)
+			if rep then mqtt_publish(rep,topic.."_") end
+        elseif type(App.mqtt_in_topics[topic])=='table' then
+            if App.mqtt_in_topics[topic][data]~= nil then
+                if type(App.mqtt_in_topics[topic][data])=='function' then
+					rep = App.mqtt_in_topics[topic][data]()
+				else
+					rep = App.mqtt_in_topics[topic][data]
+				end
             end
+			if rep then mqtt_publish(rep,topic.."_",App.mqtt_in_topics[topic]) end
         end
     end
 end)
@@ -35,22 +40,22 @@ function mqtt_connect()
                 print_log("MQTT Connection...")
                 App.mqtt.client:connect(App.mqtt.host, App.mqtt.port, 0, function(conn)
                         App.mqtt.connected = true
-                        for topic in pairs(mqtt_in_topics) do
+                        for topic in pairs(App.mqtt_in_topics) do
                             App.mqtt.client:subscribe(topic,1)
                             print_log(topic .." : subscribed")
                         end
                         _dofile("init_trig")
-                        if mesure_period then
-                            tmr.create():alarm(mesure_period, tmr.ALARM_AUTO, function () -- avant : 4
+                        if App.mesure_period then
+                            tmr.create():alarm(App.mesure_period, tmr.ALARM_AUTO, function () -- avant : 4
                                     _dofile("read_and_send")
                                     if App.logger then
                                         check_logfile_size()
                                     end
                                 end)
                         end
-                        if test_period then
-                            tmr.create():alarm(test_period, tmr.ALARM_AUTO, function() -- avant : 5
-                                    _dofile("test_and_send")
+                        if App.test_period then
+                            tmr.create():alarm(App.test_period, tmr.ALARM_AUTO, function() -- avant : 5
+									_dofile("test_and_send")
                                 end)
                         end
                         if mqtt_connected_callback then

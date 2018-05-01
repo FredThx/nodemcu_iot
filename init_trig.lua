@@ -2,7 +2,7 @@
 -- Init of the mqtt trigger
 --
 -- a mqtt trigger is defined by
---  mqtt_trig_topics["MyTopic"]={
+--  App.mqtt_trig_topics["MyTopic"]={
 --              pin = the_input_pin,
 --              pullup = false true,
 --              type = "down", -- or "_down" (as down, but realy work), "both", "low", "high"
@@ -10,8 +10,8 @@
 --              message = "Hello" (if omitted level is send ; message can be a function)
 --              divisor = false (or omitted) or the number of events for the message to be transmitted }
 ------------------------------------------
-if mqtt_trig_topics then
-    for topic, trig in pairs(mqtt_trig_topics) do
+if App.mqtt_trig_topics then
+    for topic, trig in pairs(App.mqtt_trig_topics) do
         print_log("Init trigger : ", trig.pin, trig.type)
         -- Initialisations
         if trig.pullup then
@@ -36,7 +36,7 @@ if mqtt_trig_topics then
                                     local msg
                                     no_err, msg = pcall(trig.message)
                                     print(topic.." : "..msg)
-                                    mqtt_client:publish(topic, msg, trig.qos or 0, trig.retain or 0, trig.callback)
+									mqtt_publish(msg, topic, trig)
                                     trig.counter = 0
                                 end
                                 trig.actif = true
@@ -53,7 +53,7 @@ if mqtt_trig_topics then
                                 local msg
                                 no_err, msg = pcall(trig.message)
                                 print(topic.." : "..msg)
-                                mqtt_client:publish(topic, msg, trig.qos or 0, trig.retain or 0, trig.callback)
+								mqtt_publish(msg, topic, trig)
                                 trig.counter = 0
                             end
                         end)
@@ -67,7 +67,7 @@ if mqtt_trig_topics then
                                 local msg
                                 no_err, msg = pcall(trig.message)
                                 print(topic.." : "..msg)
-                                mqtt_client:publish(topic, msg, trig.qos or 0, trig.retain or 0, trig.callback)
+                                mqtt_publish(msg, topic, trig)
                                 trig.actif = true
                             else
                                 trig.actif = false
@@ -80,7 +80,7 @@ if mqtt_trig_topics then
                             local msg
                             no_err, msg = pcall(trig.message)
                             print(topic.." : "..msg)
-                            mqtt_client:publish(topic, msg, trig.qos or 0, trig.retain or 0, trig.callback)
+                            mqtt_publish(msg, topic, trig)
                         end)
                     end
                 end
@@ -94,7 +94,7 @@ if mqtt_trig_topics then
                                 trig.counter = trig.counter+1
                                 if trig.counter>trig.divisor then
                                     print(topic.." : "..trig.message)
-                                    mqtt_client:publish(topic, trig.message, trig.qos or 0, trig.retain or 0, trig.callback)
+                                    mqtt_publish(trig.message, topic, trig)
                                     trig.counter = 0
                                 end
                                 trig.actif = true
@@ -109,7 +109,7 @@ if mqtt_trig_topics then
                             trig.counter = trig.counter+1
                             if trig.counter>trig.divisor then
                                 print(topic.." : "..trig.message)
-                                mqtt_client:publish(topic, trig.message, trig.qos or 0, trig.retain or 0, trig.callback)
+								mqtt_publish(trig.message, topic, trig)
                                 trig.counter = 0
                             end
                         end)
@@ -121,7 +121,7 @@ if mqtt_trig_topics then
                         gpio.trig(trig.pin, "both" ,function(level)
                             if trig.actif then
                                 print(topic.." : "..trig.message)
-                                mqtt_client:publish(topic, trig.message, trig.qos or 0, trig.retain or 0, trig.callback)
+								mqtt_publish(trig.message, topic, trig)
                                 trig.actif = true
                             else
                                 trig.actif = false
@@ -132,7 +132,7 @@ if mqtt_trig_topics then
                         print_log("     Valeur sans diviseur")
                         gpio.trig(trig.pin, trig.type ,function(level)
                             print(topic.." : "..trig.message)
-                            mqtt_client:publish(topic, trig.message, trig.qos or 0, trig.retain or 0, trig.callback)
+							mqtt_publish(trig.message, topic, trig)
                         end)
                     end
                 end
@@ -147,7 +147,7 @@ if mqtt_trig_topics then
                             trig.counter = trig.counter+1
                             if trig.counter>trig.divisor then
                                 print(topic.." : "..level)
-                                mqtt_client:publish(topic, level, trig.qos or 0, trig.retain or 0, trig.callback)
+								mqtt_publish(level, topic, trig)
                                 trig.counter = 0
                             end
                             trig.actif = true
@@ -162,7 +162,7 @@ if mqtt_trig_topics then
                         trig.counter = trig.counter+1
                         if trig.counter>trig.divisor then
                             print(topic.." : "..level)
-                            mqtt_client:publish(topic, level, trig.qos or 0, trig.retain or 0, trig.callback)
+                            mqtt_publish(level, topic, trig)
                             trig.counter = 0
                         end
                     end)
@@ -174,7 +174,7 @@ if mqtt_trig_topics then
                     gpio.trig(trig.pin, "both" ,function(level)
                         if trig.actif then
                             print(topic.." : "..level)
-                            mqtt_client:publish(topic, level, trig.qos or 0, trig.retain or 0, trig.callback)
+                            mqtt_publish(level, topic, trig)
                             trig.actif = false
                         else
                             trig.actif = true
@@ -185,14 +185,14 @@ if mqtt_trig_topics then
                     print_log("     Level sans diviseur")
                     gpio.trig(trig.pin, trig.type ,function(level)
                         print(topic.." : "..level)
-                        mqtt_client:publish(topic, level, trig.qos or 0, trig.retain or 0, trig.callback)
+                        mqtt_publish(level, topic, trig)
                     end)
                 end
             end
         end
     end
     -- free memory
-    mqtt_trig_topics = nil
+    App.mqtt_trig_topics = nil
     print_log('Init_trig : ok')
 end
 

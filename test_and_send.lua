@@ -1,9 +1,9 @@
---Function executee tous les test_period par alarm 5
+--Function executee tous les test_period 
 --
---Usage (dasn param.lua)
--- test_period = 1000 (1 seconde)
--- mqtt_test_topics = {}
--- mqtt_test_topics[mqtt_base_topic.."MQ-5"] = {
+--Usage (dans param.lua)
+-- App.test_period = 1000 (1 seconde)
+-- App.mqtt_test_topics = {}
+-- App.mqtt_test_topics[App.mqtt.base_topic.."MQ-5"] = {
 --          test = function()
 --                      return false or true
 --                  end,
@@ -12,7 +12,7 @@
 --         qos = 0, retain = 0, callback = nil}
 --
 
-for topic, tests in pairs(mqtt_test_topics) do
+for topic, tests in pairs(App.mqtt_test_topics) do
     local value
 	for i, test in ipairs(tests) do
         if test["test"]() then
@@ -23,7 +23,7 @@ for topic, tests in pairs(mqtt_test_topics) do
 				value = test["value"]
 			end
             print(topic, ":" , value)
-            mqtt_publish(value,topic,test)
+            mqtt_publish(value,topic,value)
         end
     end
 end
