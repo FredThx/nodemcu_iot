@@ -21,12 +21,29 @@ MSG_DEBUG = false -- if true : send messages (ex : "MQTT send : ok")
 
 
 -- thermometres
-mcp9804 = _dofile('mcp9804')
-mcp9804.init(1,2)
+mcp9803 = _dofile('mcp9803')
+mcp9803.init(1,2,mcp9803.RES00625)
+offsets={}
+--mcp9803.i2c_init(1,2,mcp9803.res05)
+
+modele = {
+    MODELE="33552",
+    VERSION="1"
+    }
+
+
 ------------------------------
--- Modules a charger
+-- Lecture fichier offset   
 ------------------------------
-modules={}
+
+if file.open("offset.json","r") then
+    local txt = file.read()
+    local ok, json = pcall(sjson.decode, txt)
+    if ok then
+        offsets = json
+    end
+end
+
 
 ------------------
 -- Params WIFI 
@@ -47,19 +64,25 @@ mqtt_pass = nil
 mqtt_client_name = HOST
 mqtt_base_topic = "PIERRON/" .. HOST .. "/"
 
+
+
+
+
 -- Messages MQTT sortants
 mesure_period =  1000
 mqtt_out_topics = {}
 mqtt_out_topics[mqtt_base_topic.."temperatures"]={
                 message = function() 
-                        local t = {}
-                        t["T1"]=mcp9804.read(0x48)
-                        t["T2"]=mcp9804.read(0x49)
-                        t["T3"]=mcp9804.read(0x4A)
-                        t["T4"]=mcp9804.read(0x4B)
-                        t["T5"]=mcp9804.read(0x4C)
-                        t["T6"]=mcp9804.read(0x4D)
-                        t["T7"]=mcp9804.read(0x4E)
+                         local t = {}
+                         t.MODELE = modele
+                         t.DATAS={}
+                        t.DATAS["T1"]=mcp9803.read(0x48)
+                        t.DATAS["T2"]=mcp9803.read(0x49) + (offsets['T2'] or 0)
+                        t.DATAS["T3"]=mcp9803.read(0x4A) + (offsets['T3'] or 0)
+                        t.DATAS["T4"]=mcp9803.read(0x4B) + (offsets['T4'] or 0)
+                        t.DATAS["T5"]=mcp9803.read(0x4C) + (offsets['T5'] or 0)
+                        t.DATAS["T6"]=mcp9803.read(0x4D) + (offsets['T6'] or 0)
+                        t.DATAS["T7"]=mcp9803.read(0x4E) + (offsets['T7'] or 0)
                         return t -- return 0 at 0V and 1 at 2V
                     end,
                 usb = true,
@@ -69,7 +92,36 @@ mqtt_out_topics[mqtt_base_topic.."temperatures"]={
 mqtt_trig_topics = {}
 -- Actions sur messages MQTT entrants
 mqtt_in_topics = {}
-                    
+mqtt_in_topics[mqtt_base_topic.."ACTION"]={
+            ["CALIBRE"]=function()
+                        print("calibration")
+                        offsets['T2'] =  mcp9803.read(0x48) - mcp9803.read(0x49)
+                        offsets['T3'] =  mcp9803.read(0x48) - mcp9803.read(0x4A)
+                        offsets['T4'] =  mcp9803.read(0x48) - mcp9803.read(0x4B)
+                        offsets['T5'] =  mcp9803.read(0x48) - mcp9803.read(0x4C)
+                        offsets['T6'] =  mcp9803.read(0x48) - mcp9803.read(0x4D)
+                        offsets['T7'] =  mcp9803.read(0x48) - mcp9803.read(0x4E)
+
+                        local f_offset = file.open("offset.json","w")
+                        f_offset:write(sjson.encode(offsets))
+                        f_offset:write('\r\n')
+                        f_offset:close()
+                    end}
+-- Scrute aussi le port usb (pour appli pianode_usb)
+uart.on("data", "\r",
+  function(txt)
+        local ok, data = pcall(sjson.decode, txt)
+        if ok and data.ACTION then
+            local action = mqtt_in_topics[mqtt_base_topic.."ACTION"][data.ACTION]
+            if type(action)=='function' then action() end            
+        else
+            print("execution code : "..txt)
+            ok, rep = pcall(loadstring(txt))
+            if rep then print(rep) end
+        end
+end, 0)
+
+
 -- Messages MQTT sortants sur test
 test_period = false
 mqtt_test_topics = {}
