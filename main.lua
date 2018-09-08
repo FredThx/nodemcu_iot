@@ -7,6 +7,8 @@
 -- Lecture du fichier parametres
 App = require("params")
 
+App.mqtt_in_topics = App.mqtt_in_topics or {}
+
 -- Debug
 if App.msg_debug == nil then App.msg_debug = true end
 
@@ -34,9 +36,11 @@ end
 
 _dofile("add_reverse_topics")
 
-for key, reader in pairs(App.modules or {}) do
-    print_log("Load " .. reader)
-    _dofile(reader)
+if App.modules then
+    for key, reader in pairs(App.modules or {}) do
+        print_log("Load " .. reader)
+        _dofile(reader)
+    end
 end
 
 -- Fonction de publication des données (via mqtt et usb sérial)

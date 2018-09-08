@@ -34,10 +34,12 @@ if App.mqtt_trig_topics then
                                 trig.counter = trig.counter+1
                                 if trig.counter>trig.divisor then
                                     local msg
-                                    no_err, msg = pcall(trig.message)
-                                    print(topic.." : "..msg)
-									App.mqtt_publish(msg, topic, trig)
-                                    trig.counter = 0
+                                    no_err, msg = pcall(trig.message,level,when,eventcount)
+                                    if no_erre and msg then
+                                        --print(topic.." : "..msg)
+									    App.mqtt_publish(msg, topic, trig)
+                                        trig.counter = 0
+                                    end
                                 end
                                 trig.actif = true
                             else
@@ -47,14 +49,16 @@ if App.mqtt_trig_topics then
                     else
                         -- **** Function et diviseur
                         print_log("    Function et diviseur")
-                        gpio.trig(trig.pin, trig.type ,function(level)
+                        gpio.trig(trig.pin, trig.type ,function(level,when,eventcount)
                             trig.counter = trig.counter+1
                             if trig.counter>trig.divisor then
                                 local msg
-                                no_err, msg = pcall(trig.message)
-                                print(topic.." : "..msg)
-								App.mqtt_publish(msg, topic, trig)
-                                trig.counter = 0
+                                no_err, msg = pcall(trig.message,level,when,eventcount)
+                                if no_err and msg then
+                                    --print(topic.." : "..msg)
+								    App.mqtt_publish(msg, topic, trig)
+                                    trig.counter = 0
+                                end
                             end
                         end)
                     end
@@ -62,13 +66,15 @@ if App.mqtt_trig_topics then
                     if trig.type=="_down" then
                         -- ****function sans diviseur et _down
                         print_log("     function sans diviseur et _down")
-                        gpio.trig(trig.pin, "both" ,function(level)
+                        gpio.trig(trig.pin, "both" ,function(level,when,eventcount)
                             if not trig.actif then
                                 local msg
-                                no_err, msg = pcall(trig.message)
-                                print(topic.." : "..msg)
-                                App.mqtt_publish(msg, topic, trig)
-                                trig.actif = true
+                                no_err, msg = pcall(trig.message,level,when,eventcount)
+                                if no_err and msg then
+                                    --print(topic.." : "..msg)
+                                    App.mqtt_publish(msg, topic, trig)
+                                    trig.actif = true
+                                end
                             else
                                 trig.actif = false
                             end
@@ -76,11 +82,13 @@ if App.mqtt_trig_topics then
                     else
                         -- ****function sans diviseur
                         print_log("     function sans diviseur")
-                        gpio.trig(trig.pin, trig.type ,function(level)
+                        gpio.trig(trig.pin, trig.type ,function(level,when,eventcount)
                             local msg
-                            no_err, msg = pcall(trig.message)
-                            print(topic.." : "..msg)
-                            App.mqtt_publish(msg, topic, trig)
+                            no_err, msg = pcall(trig.message, level,when,eventcount)
+                            if no_err and msg then
+                                --print(topic.." : "..msg)
+                                App.mqtt_publish(msg, topic, trig)
+                            end
                         end)
                     end
                 end
@@ -89,11 +97,11 @@ if App.mqtt_trig_topics then
                     if trig.type=="_down" then
                         -- ****Valeur et diviseur et _down
                         print_log("     Valeur et diviseur et _down")
-                        gpio.trig(trig.pin, "both" ,function(level)
+                        gpio.trig(trig.pin, "both" ,function(level,when,eventcount)
                             if not trig.actif then
                                 trig.counter = trig.counter+1
                                 if trig.counter>trig.divisor then
-                                    print(topic.." : "..trig.message)
+                                    --print(topic.." : "..trig.message)
                                     App.mqtt_publish(trig.message, topic, trig)
                                     trig.counter = 0
                                 end
@@ -105,10 +113,10 @@ if App.mqtt_trig_topics then
                     else
                         -- ****Valeur et diviseur
                         print_log("     Valeur et diviseur")
-                        gpio.trig(trig.pin, trig.type ,function(level)
+                        gpio.trig(trig.pin, trig.type ,function(level,when,eventcount)
                             trig.counter = trig.counter+1
                             if trig.counter>trig.divisor then
-                                print(topic.." : "..trig.message)
+                                --print(topic.." : "..trig.message)
 								App.mqtt_publish(trig.message, topic, trig)
                                 trig.counter = 0
                             end
@@ -118,9 +126,9 @@ if App.mqtt_trig_topics then
                     if trig.type=="_down" then
                         -- ****Valeur sans diviseur et _down
                         print_log("     Valeur sans diviseur et _down")
-                        gpio.trig(trig.pin, "both" ,function(level)
+                        gpio.trig(trig.pin, "both" ,function(level,when,eventcount)
                             if trig.actif then
-                                print(topic.." : "..trig.message)
+                                --print(topic.." : "..trig.message)
 								App.mqtt_publish(trig.message, topic, trig)
                                 trig.actif = true
                             else
@@ -130,8 +138,8 @@ if App.mqtt_trig_topics then
                     else
                         -- ****Valeur sans diviseur
                         print_log("     Valeur sans diviseur")
-                        gpio.trig(trig.pin, trig.type ,function(level)
-                            print(topic.." : "..trig.message)
+                        gpio.trig(trig.pin, trig.type ,function(level,when,eventcount)
+                            --print(topic.." : "..trig.message)
 							App.mqtt_publish(trig.message, topic, trig)
                         end)
                     end
@@ -142,11 +150,11 @@ if App.mqtt_trig_topics then
                 if trig.type == "_down" then
                     -- **** Level et diviseur et _down
                     print_log("     Level et diviseur et _down")
-                    gpio.trig(trig.pin, "both" ,function(level)
+                    gpio.trig(trig.pin, "both" ,function(level,when,eventcount)
                         if trig.actif then
                             trig.counter = trig.counter+1
                             if trig.counter>trig.divisor then
-                                print(topic.." : "..level)
+                                --print(topic.." : "..level)
 								App.mqtt_publish(level, topic, trig)
                                 trig.counter = 0
                             end
@@ -158,10 +166,10 @@ if App.mqtt_trig_topics then
                 else
                     -- **** Level et diviseur
                     print_log("     Level et diviseur")
-                    gpio.trig(trig.pin, trig.type ,function(level)
+                    gpio.trig(trig.pin, trig.type ,function(level,when,eventcount)
                         trig.counter = trig.counter+1
                         if trig.counter>trig.divisor then
-                            print(topic.." : "..level)
+                            --print(topic.." : "..level)
                             App.mqtt_publish(level, topic, trig)
                             trig.counter = 0
                         end
@@ -171,9 +179,9 @@ if App.mqtt_trig_topics then
                 if trig.type == "_down" then
                     -- **** Level sans diviseur et _down
                     print_log("     Level sans diviseur et _down")
-                    gpio.trig(trig.pin, "both" ,function(level)
+                    gpio.trig(trig.pin, "both" ,function(level,when,eventcount)
                         if trig.actif then
-                            print(topic.." : "..level)
+                            --print(topic.." : "..level)
                             App.mqtt_publish(level, topic, trig)
                             trig.actif = false
                         else
@@ -183,8 +191,8 @@ if App.mqtt_trig_topics then
                 else
                     -- **** Level sans diviseur
                     print_log("     Level sans diviseur")
-                    gpio.trig(trig.pin, trig.type ,function(level)
-                        print(topic.." : "..level)
+                    gpio.trig(trig.pin, trig.type ,function(level,when,eventcount)
+                        --print(topic.." : "..level)
                         App.mqtt_publish(level, topic, trig)
                     end)
                 end

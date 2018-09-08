@@ -2,7 +2,8 @@
 --
 -- usage :
 --  mcp = require 'mcp3008'
---  mcp.init(6,7,5,8) or mcp.init() to use default
+--  pin_miso, pin_mosi, pin_clk, pin_cs = 5,6,7,8
+--  mcp.init(pin_miso,pin_mosi,pin_clk,pin_cs) or mcp.init() to use default
 --  mcp.init = nil -- to free memory
 --  chanel = 1 -- (0-7)
 --  val = mcp.read(chanel)
@@ -41,15 +42,16 @@ do
     
     -- Function to read MCP3008
     local read_MCP3008 = function (adc_ch)
+        local pause = 10
        if adc_ch >=0 and adc_ch < 8 then
           -- MCP3008 has eight channels 0-7
     
           gpio.write(CS,gpio.HIGH)
-           tmr.delay(5)  
+           tmr.delay(5*pause)  
             
            gpio.write(CLK, gpio.LOW)  
               gpio.write(CS, gpio.LOW)      -->Activate the chip 
-           tmr.delay(1)                  -->1us Delay
+           tmr.delay(pause)                  -->1us Delay
           
            commandout = adc_ch
            commandout=bit.bor(commandout, 0x18) 
@@ -63,16 +65,16 @@ do
                 commandout=bit.lshift(commandout,1)
                 
                 gpio.write(CLK, gpio.HIGH)
-                tmr.delay(1)
+                tmr.delay(pause)
                 gpio.write(CLK, gpio.LOW)
-                tmr.delay(1)       
+                tmr.delay(pause)       
           end
           adcout = 0
           for i=1,12 do
                 gpio.write(CLK, gpio.HIGH)
-                tmr.delay(1)  
+                tmr.delay(pause)  
                 gpio.write(CLK, gpio.LOW)
-                tmr.delay(1)  
+                tmr.delay(pause)  
                  adcout = bit.lshift(adcout,1);
                  if gpio.read(MISO)>0 then
                      adcout = bit.bor(adcout, 0x1)

@@ -37,7 +37,12 @@
 -------------------------------------------------
 
 --TODO : regler le probleme de demandes simultanees
-
+--	soit
+--			- buffer
+--			- timeout
+-- soit
+--			- lecture de tous les capteurs si mesure il y a plus de xx (5s par ex)
+--			- renvoie des valeurs
 
 local M
 do
@@ -49,15 +54,20 @@ do
                 ask_rom = {ask_rom}
             end
             ds18b20.read(function(ind,rom,res,temp,tdec,par)
-                    print_log(string.format("%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",string.match(rom,"(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+)")).." => "..temp)
-                    callback(temp)
+                    print_log(string.format(
+                        "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
+                        string.match(rom,"(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+)"))
+                        .." => "..temp)
+					if temp < 85 then
+						callback(temp)
+					end
                 end,ask_rom)
     end
     
     M =  {
             read = read_DS18B20,
             init = ds18b20.setup,
-            pipe = {}
+            --pipe = {}
         }    
 end
 return M

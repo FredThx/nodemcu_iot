@@ -11,7 +11,7 @@ end
         
 
 print_log = function(txt)
-    if App.msg_debug then
+    if App==nil or App.msg_debug == nil or App.msg_debug then
         print(txt)
     end
 end

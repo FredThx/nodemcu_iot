@@ -14,6 +14,10 @@ App.mqtt.client = mqtt.Client(App.mqtt.client_name, 120, App.mqtt.user, App.mqtt
 App.mqtt.client:on("offline", function(con) 
     print_log ("MQTT offline")
     App.mqtt.connected = false
+    if App.mqtt.disconnected_callback then 
+        print_log('mqtt_disconnected_callback call...')
+        pcall(App.mqtt.disconnected_callback)
+    end
     mqtt_connect()
     end)
 
@@ -38,6 +42,12 @@ App.mqtt.client:on("message", function(conn, topic, data)
     end
 end)
 
+-- when mqtt connect : subscribe and call App.mqtt.connected_callback
+App.mqtt.client:on("connect", function(client)
+				
+			end)
+
+
 -- Connecte (ou reconnecte) le client mqtt
 function mqtt_connect()
 	local mqtt_connect_alarm = tmr.create()
@@ -48,16 +58,16 @@ function mqtt_connect()
             else
                 print_log("MQTT Connection...")
                 App.mqtt.client:connect(App.mqtt.host, App.mqtt.port, 0, function(conn)
-                        App.mqtt.connected = true
-                        for topic in pairs(App.mqtt_in_topics) do
-                            App.mqtt.client:subscribe(topic,1)
-                            print_log(topic .." : subscribed")
-                        end
-                        if App.mqtt.connected_callback then
-                            print_log('mqtt_connected_callback call...')
-                            pcall (App.mqtt.connected_callback)
-                        end
-                    end)
+								App.mqtt.connected = true
+								for topic in pairs(App.mqtt_in_topics) do
+									App.mqtt.client:subscribe(topic,1)
+									print_log(topic .." : subscribed")
+								end
+								if App.mqtt.connected_callback then
+									print_log('mqtt_connected_callback call...')
+									pcall (App.mqtt.connected_callback)
+								end
+							end)
             end
         end)
 end

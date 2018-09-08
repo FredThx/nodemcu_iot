@@ -16,18 +16,13 @@ progs={ "init_mqtt",
         "util",
         "logger",
         "i2c_lcd",
-        "lcd1602",
         "i2c_geste",
         "paj7620",
         "mcp3008",
         "maxsonar",
         "servo",
         "mpu6050",
-        "stepper",
-        "mcp3201",
-        "rotary",
-        "vl6180x",
-        "led_rbv"
+        "stepper"
         }
 files = file.list()
 for k, prog in pairs(progs) do

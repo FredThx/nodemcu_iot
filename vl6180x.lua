@@ -40,6 +40,7 @@ do
             end --
         else --
             print('Connection Error device not found on ic2 bus.')
+            val = false
         end --
         i2c.stop(id) --
         return val --
@@ -68,57 +69,62 @@ do
         -- Init I2C
         i2c.setup(id,sda, scl, i2c.SLOW)
         -- Init VL6160X
-        if read_reg(0x016)== 1 then
-            write_reg(0x207, 0x01) -- SYSTEM__FRESH_OUT_OF_RESET
-            write_reg(0x208, 0x01)
-            write_reg(0x096, 0x00)
-            write_reg(0x097, 0xfd)-- RANGE_SCALER = 253
-            write_reg(0x0E3, 0x00)
-            write_reg(0x0E4, 0x04)
-            write_reg(0x0E5, 0x02)
-            write_reg(0x0E6, 0x01)
-            write_reg(0x0E7, 0x03)
-            write_reg(0x0F5, 0x02)
-            write_reg(0x0D9, 0x05)
-            write_reg(0x0DB, 0xCE)
-            write_reg(0x0DC, 0x03)
-            write_reg(0x0DD, 0xF8)
-            write_reg(0x09F, 0x00)
-            write_reg(0x0A3, 0x3C)
-            write_reg(0x0B7, 0x00)
-            write_reg(0x0BB, 0x3C)
-            write_reg(0x0B2, 0x09)
-            write_reg(0x0CA, 0x09)
-            write_reg(0x198, 0x01)
-            write_reg(0x1B0, 0x17)
-            write_reg(0x1AD, 0x00)
-            write_reg(0x0FF, 0x05)
-            write_reg(0x100, 0x05)
-            write_reg(0x199, 0x05)
-            write_reg(0x1A6, 0x1B)
-            write_reg(0x1AC, 0x3E)
-            write_reg(0x1A7, 0x1F)
-            write_reg(0x030, 0x00)
+        local read_0x16 = read_reg(0x016) 
+        if read_0x16 then
+            if read0x16 == 1 then
+                write_reg(0x207, 0x01) -- SYSTEM__FRESH_OUT_OF_RESET
+                write_reg(0x208, 0x01)
+                write_reg(0x096, 0x00)
+                write_reg(0x097, 0xfd)-- RANGE_SCALER = 253
+                write_reg(0x0E3, 0x00)
+                write_reg(0x0E4, 0x04)
+                write_reg(0x0E5, 0x02)
+                write_reg(0x0E6, 0x01)
+                write_reg(0x0E7, 0x03)
+                write_reg(0x0F5, 0x02)
+                write_reg(0x0D9, 0x05)
+                write_reg(0x0DB, 0xCE)
+                write_reg(0x0DC, 0x03)
+                write_reg(0x0DD, 0xF8)
+                write_reg(0x09F, 0x00)
+                write_reg(0x0A3, 0x3C)
+                write_reg(0x0B7, 0x00)
+                write_reg(0x0BB, 0x3C)
+                write_reg(0x0B2, 0x09)
+                write_reg(0x0CA, 0x09)
+                write_reg(0x198, 0x01)
+                write_reg(0x1B0, 0x17)
+                write_reg(0x1AD, 0x00)
+                write_reg(0x0FF, 0x05)
+                write_reg(0x100, 0x05)
+                write_reg(0x199, 0x05)
+                write_reg(0x1A6, 0x1B)
+                write_reg(0x1AC, 0x3E)
+                write_reg(0x1A7, 0x1F)
+                write_reg(0x030, 0x00)
+                
+                write_reg(0x016, 0)
+            end
             
-            write_reg(0x016, 0)
+            write_reg(0x014, 0x24) --SYSTEM__INTERRUPT_CONFIG_GPIO
+            write_reg(0x011, 0x10) -- SYSTEM__MODE_GPIO1
+            write_reg(0x10A, 0x30) -- READOUT__AVERAGING_SAMPLE_PERIOD : 48
+            write_reg(0x03F, 0x46) -- SYSALS__ANALOGUE_GAIN : 1.0 
+            write_reg(0x031, 0xff) -- SYSRANGE__VHV_REPEAT_RATE
+            write_reg(0x040, 0x63,2) -- SYSALS__INTEGRATION_PERIOD : 100ms
+            write_reg(0x02E, 0x01) -- SYSRANGE__VHV_RECALIBRATE
+            write_reg(0x01B, 0x09) --SYSRANGE__INTERMEASUREMENT_PERIOD
+            write_reg(0x03E, 0x0A) --SYSALS__INTERMEASUREMENT_PERIOD
+            
+            write_reg(0x01C, 0x32) -- SYSRANGE__MAX_CONVERGENCE_TIME        
+            write_reg(0x02D, 0x11) -- SYSRANGE__RANGE_CHECK_ENABLES
+            write_reg(0x022, 0x78,2) -- SYSRANGE__EARLY_CONVERGENCE_ESTIMATE
+            write_reg(0x10A, 0x30) -- READOUT__AVERAGING_SAMPLE_PERIOD
+            write_reg(0x03F, 0x40) -- SYSALS__ANALOGUE_GAIN
+            write_reg(0x120, 0x01) -- FIRMWARE__RESULT_SCALER
+        else
+            print("Error device not found.")
         end
-        
-        write_reg(0x014, 0x24) --SYSTEM__INTERRUPT_CONFIG_GPIO
-        write_reg(0x011, 0x10) -- SYSTEM__MODE_GPIO1
-        write_reg(0x10A, 0x30) -- READOUT__AVERAGING_SAMPLE_PERIOD : 48
-        write_reg(0x03F, 0x46) -- SYSALS__ANALOGUE_GAIN : 1.0 
-        write_reg(0x031, 0xff) -- SYSRANGE__VHV_REPEAT_RATE
-        write_reg(0x040, 0x63,2) -- SYSALS__INTEGRATION_PERIOD : 100ms
-        write_reg(0x02E, 0x01) -- SYSRANGE__VHV_RECALIBRATE
-        write_reg(0x01B, 0x09) --SYSRANGE__INTERMEASUREMENT_PERIOD
-        write_reg(0x03E, 0x0A) --SYSALS__INTERMEASUREMENT_PERIOD
-        
-        write_reg(0x01C, 0x32) -- SYSRANGE__MAX_CONVERGENCE_TIME        
-        write_reg(0x02D, 0x11) -- SYSRANGE__RANGE_CHECK_ENABLES
-        write_reg(0x022, 0x78,2) -- SYSRANGE__EARLY_CONVERGENCE_ESTIMATE
-        write_reg(0x10A, 0x30) -- READOUT__AVERAGING_SAMPLE_PERIOD
-        write_reg(0x03F, 0x40) -- SYSALS__ANALOGUE_GAIN
-        write_reg(0x120, 0x01) -- FIRMWARE__RESULT_SCALER
     end
 
     -- Read the distance. Result in mm
@@ -126,12 +132,32 @@ do
         write_reg(0x18,0x01) -- SYSRANGE__START
         while not bit.isset(read_reg(0x04f),2) do -- RESULT__INTERRUPT_STATUS_GPIO
         end
-        range = read_reg(0x62) -- RESULT__RANGE_VAL
         write_reg(0x15,0x07) -- SYSTEM__INTERRUPT_CLEAR
-        return range
+        local range = read_reg(0x62) -- RESULT__RANGE_VAL
+        local status  = bit.arshift(read_reg(0x4D),4) -- RESULT__RANGE_STATUS
+        print(status)
+        if status == 0 then return range 
+        else
+            print("Erreur capteur : " .. status)
+        end
     end
+
+    local function getAmbientLight()
+        -- Gain
+        write_reg(0x3F,bit.bor(0x40,6)) -- SYSALS__ANALOGUE_GAIN
+        write_reg(0x38,0x01) --SYSALS__START
+        while not bit.isset(read_reg(0x04e),0) do -- RESULT__ALS_STATUS
+        end
+        write_reg(0x15,0x07) -- SYSTEM__INTERRUPT_CLEAR
+        local als_raw = read_reg(0x050,2) -- RESULT__ALS_VAL
+        local alsIntegrationPeriodRaw  = read_reg(0x40,2) -- SYSALS__INTEGRATION_PERIOD
+        local als_gain = 1.01
+        local als = 32 * (als_raw/als_gain) / alsIntegrationPeriodRaw
+        return als
+    end 
     
     M.distance = read_distance
+    M.ambient = getAmbientLight
     M.init = init
 end
 return M

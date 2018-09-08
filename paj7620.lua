@@ -1,6 +1,29 @@
+-------------------------------------------------
+--  Projet : des IOT a base de nodemcu (ESP8266)
+--           qui communiquent en MQTT
+-------------------------------------------------
+--  Auteur : FredThx  
+-------------------------------------------------
+--  Ce fichier : 
+--              Utilisation d'un module grove gesture (PAJ7620)
+--
+--              Initialisation du PAJ7620
+--              mise en place du deamon de lecture
+--
+-------------------------------------------------
+--  Utilisation :
+--              G = require("paj7620")
+--              G.init()
+--              G.init = nil  -- to free memory
+--              G.scan(function(c) print(c.." catch") end)
+--
+-------------------------------------------------
+-- Modules nécessaires dans le firmware :
+--    i2c, bit
+-------------------------------------------------
 local M
 do
-    local ADR = 0x73
+    local ADR = 0x73  -- default PAJ6220 i2c addr
     local PAJ7620_ADDR_BASE = 0x00
     local PAJ7620_REGITER_BANK_SEL = PAJ7620_ADDR_BASE + 0xEF
     local PAJ7620_BANK0 = bit.lshift(0,0)
@@ -19,6 +42,10 @@ do
     local GES_QUIT_TIME = 1500
 
     local GES_REG_FILE = "paj7620.reg"
+	
+	local ALARM_TIME = 100
+	local alarm = tmr.create()
+	
     -- Write data
     --      addr : reg adress
     --      cmd : function data
@@ -46,7 +73,10 @@ do
     end
 
     -- Init sensor
-    local paj7620Init = function()
+    local paj7620Init = function(adr, alarm_time)
+	    ADR = adr or ADR
+		ALARM_TIME = alarm_time or ALARM_TIME
+        print("Init PAJ7620 at 0x"..string.format("%x", ADR))
         --i2c.start(0)
         print("Init gestual sensor...")
         paj7620WriteReg(PAJ7620_REGITER_BANK_SEL, PAJ7620_BANK0);
@@ -81,11 +111,11 @@ do
     --      - alarme_id : 0-6 alarme id
     --      - alarme_time : time between sensors read
     --      - callback : callback function with geste as parameter
-    local scan = function(alarm_id, alarm_time, callback)
-        tmr.alarm(alarm_id, alarm_time, tmr.ALARM_AUTO, function ()
+    local scan = function(callback)
+        alarm:alarm(ALARM_TIME, tmr.ALARM_AUTO, function ()
             local data = paj7620ReadReg(0x43) + paj7620ReadReg(0x44)*256
             if data ~= 0 then
-                tmr.stop(alarm_id)
+                alarm:stop()
                 if data >= GES_FORWARD_FLAG then
                     callback(data)
                 else
@@ -98,22 +128,26 @@ do
                     end
                 end
                 tmr.delay(GES_QUIT_TIME)
-                tmr.start(alarm_id)
+                alarm:start()
             end
         end)
     end
     
-    local init = function(adr)
-        ADR = adr or 0x73
-        print("Init PAJ7620 at 0x"..string.format("%x", ADR))
-        paj7620Init()
-        return {
-            write = paj7620WriteReg,
-            read = paj7620ReadReg,
-            scan = scan
-        }
-    end
-    M = init
-    print("Heap : " .. node.heap())
+--    local init = function(adr)
+--        ADR = adr or 0x73
+--        print("Init PAJ7620 at 0x"..string.format("%x", ADR))
+--        paj7620Init()
+        --return {
+        --    write = paj7620WriteReg,
+        --    read = paj7620ReadReg,
+        --    scan = scan
+        --}
+--    end
+    M={
+		init = paj7620Init,
+		--write = paj7620WriteReg,
+		--read = paj7620ReadReg,
+		scan = scan
+	}
 end
 return M
