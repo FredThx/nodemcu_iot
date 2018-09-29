@@ -6,7 +6,25 @@
 -------------------------------------------------
 --  Ce fichier : paramètres pour nodemcu
 --               avec
+--            - MPX2010 (capteur de pression)
+--				- ampli-op pour augmenter la sortie
+--				- MCP3008 pour lire la tension, donc la pression
+-------------------------------------------------
+-- Modules nécessaires dans le firmware :
+--    file, gpio, net, node,tmr, uart, wifi
+--    bit, mqtt, i2c
+-------------------------------------------------
+local App = {}
 
+do
+    --App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
+    App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
+
+    -- Convertisseur Analogique Nnumérique MCP3008
+    can = require 'mcp3201'
+    can.init()
+
+    ------------------
     -- Params WIFI 
     ------------------
     App.net = {
