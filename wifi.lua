@@ -1,6 +1,8 @@
 -- GESTION WIFI
 -- Réalise la connection WIFI
 -- quand établie, execute on_wifi_connected()
+--TODO : supprimer ce module!
+
 
 function wait_for_wifi_conn()
 	local wifi_alarm = tmr.create()

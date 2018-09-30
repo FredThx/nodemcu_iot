@@ -6,13 +6,12 @@
 -------------------------------------------------
 --  Ce fichier : paramètres pour nodemcu
 --               avec
---            - MPX2010 (capteur de pression)
---				- ampli-op pour augmenter la sortie
---				- MCP3008 pour lire la tension, donc la pression
+--              - VANNE EAU pilotée par REALAIS
+--			    - capteur de debit
 -------------------------------------------------
 -- Modules nécessaires dans le firmware :
 --    file, gpio, net, node,tmr, uart, wifi
---    bit, mqtt, i2c
+--    bit, mqtt
 -------------------------------------------------
 local App = {}
 
@@ -20,9 +19,9 @@ do
     --App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
     App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
 
-    -- Convertisseur Analogique Nnumérique MCP3008
-    can = require 'mcp3201'
-    can.init(1,7)
+    -- Relais qui pilote la vanne
+    pin_vanne=1
+    gpio.mode(pin_vanne, gpio.OUTPUT)
 
     ------------------
     -- Params WIFI 
@@ -41,21 +40,26 @@ do
         port = 1883,
         user = "fredthx",
         pass = "GaZoBu",
-        client_name = "NODE-NIVEAU-PISCINE",
-        base_topic = "T-HOME/PISCINE/"
+        client_name = "NODE-ARRIVEE-EAU",
+        base_topic = "T-HOME/ARRIVEE-EAU/"
     }
     
     -- Messages MQTT sortants
     App.mesure_period = 60 * 1000
     App.mqtt_out_topics = {}
-    App.mqtt_out_topics[App.mqtt.base_topic.."NIVEAU"]={
-                    message = function()
-                            local pression
-                            pression = can.read(0) / 1023 * 5 -- Vref = 5V
-                            pression = pression / 25 * 10000 -- Gain ampli-op = 1000 & 25mV -> 10kpa
-                            return math.floor(pression)
-                            --return math.floor(pression * 0.09 + 17) -- en cm (10m = 10^5 Pa) & correrction
-                        end}
-end
+    
+    -- Actions sur messages MQTT entrants
+    App.mqtt_in_topics = {}    
+    App.mqtt_in_topics[App.mqtt.base_topic.."VANNE"] = {
+            ["ON"]=function()
+                        gpio.write(pin_vanne, gpio.LOW)
+                    end,
+            ["OFF"]=function()
+                        gpio.write(pin_vanne, gpio.HIGH)
+                    end}
 
+    App.mqtt.connected_callback = function()
+            App.mqtt_publish("ON",App.mqtt.base_topic.."VANNE")
+        end
+end
 return App
