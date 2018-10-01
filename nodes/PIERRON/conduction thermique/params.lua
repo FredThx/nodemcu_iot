@@ -23,6 +23,7 @@ MSG_DEBUG = false -- if true : send messages (ex : "MQTT send : ok")
 -- thermometres
 mcp9803 = _dofile('mcp9803')
 mcp9803.init(1,2,mcp9803.RES00625)
+mcp9803.init = nil -- free memory
 offsets={}
 --mcp9803.i2c_init(1,2,mcp9803.res05)
 
@@ -48,8 +49,8 @@ end
 ------------------
 -- Params WIFI 
 ------------------
-SSID = {"PIERRON"}
-PASSWORD = "Pierr0neducAction57206ruegutenberg"
+SSID = {"PIANODE"}
+PASSWORD = "pYthagore"
 HOST = "PI_33552"
 wifi_time_retry = 10 -- minutes
 
@@ -57,7 +58,7 @@ wifi_time_retry = 10 -- minutes
 -- Params MQTT
 --------------------
 --mqtt_host = "31.29.97.206"
-mqtt_host = "10.10.1.156"
+mqtt_host = "10.3.141.1"
 mqtt_port = 1883
 mqtt_user = nil
 mqtt_pass = nil
@@ -83,6 +84,7 @@ mqtt_out_topics[mqtt_base_topic.."temperatures"]={
                         t.DATAS["T5"]=mcp9803.read(0x4C) + (offsets['T5'] or 0)
                         t.DATAS["T6"]=mcp9803.read(0x4D) + (offsets['T6'] or 0)
                         t.DATAS["T7"]=mcp9803.read(0x4E) + (offsets['T7'] or 0)
+                        t.HEAP = node.heap()
                         return t -- return 0 at 0V and 1 at 2V
                     end,
                 usb = true,
@@ -116,6 +118,7 @@ uart.on("data", "\r",
             if type(action)=='function' then action() end            
         else
             print("execution code : "..txt)
+            txt = string.gsub(txt,"=","return ",1)
             ok, rep = pcall(loadstring(txt))
             if rep then print(rep) end
         end

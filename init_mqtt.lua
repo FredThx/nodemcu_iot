@@ -18,11 +18,9 @@ mqtt_client = mqtt.Client(mqtt_client_name, 120, mqtt_user, mqtt_pass)
 --mqtt_client:on("connect", function(con) print ("MQTT connected") end)
 -- on close connection, keep alive connection
 mqtt_client:on("offline", function(con) 
-    print_log ("MQTT offline")
-    --todo : stop the triggers
-    tmr.stop(4)
-    mqtt_connected = false
-    mqtt_connect()
+        print_log ("MQTT offline")
+        mqtt_connected = false
+        mqtt_connect()
     end)
 
 -- on receive message
@@ -42,12 +40,14 @@ mqtt_client:on("message", function(conn, topic, data)
 end)
 
 function mqtt_connect()
-    tmr.alarm(3, 1000, 1, function()
+    local alarm = tmr.create()
+    alarm:alarm(1000, 1, function()
             if mqtt_connected then
                 print_log("MQTT Connected.")
-                tmr.stop(3)
+                alarm:stop()
             else
                 print_log("MQTT Connection...")
+                mqtt_client:close()
                 mqtt_client:connect(mqtt_host, mqtt_port, 0, function(conn)
                         mqtt_connected = true
                         for topic in pairs(mqtt_in_topics) do
@@ -56,7 +56,7 @@ function mqtt_connect()
                         end
                         _dofile("init_trig")
                         if test_period then
-                            tmr.alarm(5,test_period, tmr.ALARM_AUTO, function()
+                            tmr.create():alarm(test_period, tmr.ALARM_AUTO, function()
                                     _dofile("test_and_send")
                                 end)
                         end
@@ -64,6 +64,9 @@ function mqtt_connect()
                             print_log('mqtt_connected_callback called')
                             pcall (mqtt_connected_callback)
                         end
+                    end,
+                    function(client, reason)
+                        print("Erreur mqtt : " .. reason)
                     end)
             end
         end)
@@ -71,5 +74,5 @@ end
 
 
 mqtt_connect()
-print_log('Init_mqtt : ok')
+
                 
