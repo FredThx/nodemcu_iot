@@ -11,7 +11,7 @@
 -------------------------------------------------
 -- Modules nécessaires dans le firmware :
 --    file, gpio, net, node,tmr, uart, wifi
---    bit, mqtt, ds18b20
+--    bit, mqtt
 -------------------------------------------------
 
 LOGGER = false
@@ -19,12 +19,6 @@ TELNET = false
 WATCHDOG = true
 WATCHDOG_TIMEOUT = 30*60 -- 30 minutes
 
-
--- Capteur température DSx20
-DS1820_PIN = 8
-sensors = { 
-    [string.char(40,11,234,46,6,0,0,53)] = "entree"
-}
 
 -- Relais
 
@@ -43,7 +37,7 @@ gpio.write(LED_2_PIN, gpio.LOW)
 ------------------------------
 -- Modules a charger
 ------------------------------
-modules={"ds1820_reader"}
+modules={}
 
 ------------------
 -- Params WIFI 
@@ -67,12 +61,6 @@ mqtt_base_topic = "T-SARREG/CHAUFF/"
 -- Messages MQTT sortants
 mesure_period = 10*60 * 1000
 mqtt_out_topics = {}
-mqtt_out_topics[mqtt_base_topic.."temperature"]={
-                message = function()
-                        t = readDSSensors("entree")
-                        return t
-                    end,
-                qos = 0, retain = 0, callback = nil}
 
 -- Messages sur trigger GPIO
 mqtt_trig_topics = {}

@@ -17,13 +17,22 @@ local App = {}
 
 do
     --App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
-    App.msg_debug = false -- if true : send messages (ex : "MQTT send : ok")
+    App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
 
     -- ruban de leds
     ws2812.init()
     buffer=ws2812.newBuffer(150,3)
     buffer:fill(0, 0, 0)
     ws2812.write(buffer)
+
+    --Bouton
+    pin_bt = 5
+
+    gpio.mode(pin_bt,gpio.INT)
+    gpio.trig(pin_bt, "up", function(level)
+            node.restart()
+        end)
+    
         ------------------
     -- Params WIFI 
     ------------------
@@ -60,16 +69,21 @@ do
     App.mqtt_in_topics = {}
     
     App.mqtt_in_topics[App.mqtt.base_topic.."LEDS"] = {
+                -- Turn off all the leds
+                -- TODO : faire une copie du buffer pour faire un "ON"
                 ["OFF"]=function()
                         buffer:fill(0, 0, 0)
                         ws2812.write(buffer)   
                     end}
     
     App.mqtt_in_topics[App.mqtt.base_topic.."FADE"]= function(data)
+                -- Change the luminosity
+                -- ex : msg.payload = "10" ou "-5"
                 data = tonumber(data)
                 if data then
                     if data > 0 then 
                         buffer:fade(data, ws2812.FADE_OUT)
+                        -- TODO : stocker état actuel pour faire un "UNFADE"
                     else
                         buffer:fade(-data, ws2812.FADE_IN)
                     end
@@ -78,6 +92,9 @@ do
             end
     
     App.mqtt_in_topics[App.mqtt.base_topic.."SHIFT"]= function(data)
+                -- Shift all the leds
+                -- ex : msg.payload = "1" (or -2)
+                -- ex : msg.payload = "{"value":1,"mode":1,"i":1,"j":10}"
                 if tonumber(data) then
                     buffer:shift(tonumber(data))
                 else
@@ -89,6 +106,8 @@ do
                 ws2812.write(buffer)   
             end
     App.mqtt_in_topics[App.mqtt.base_topic.."SET"]= function(data)
+                -- Set a led
+                -- ex : msg.payload = "{"index":5,"color":[0,255,0]}"
                 local isjson, datas = pcall(sjson.decode, data)
                 if isjson then
                     buffer:set(datas.index, datas.color)
@@ -96,6 +115,8 @@ do
                 ws2812.write(buffer)
             end
     App.mqtt_in_topics[App.mqtt.base_topic.."FILL"]= function(data)
+                -- Fill all the leds
+                -- ex : mag.payload = "[0,0,10]"
                 local isjson, datas = pcall(sjson.decode, data)
                 if isjson then
                     buffer:fill(unpack(datas))
@@ -103,9 +124,32 @@ do
                 ws2812.write(buffer)
             end
     App.mqtt_in_topics[App.mqtt.base_topic.."REPLACE"]= function(data)
+                -- don't work!
                 local isjson, datas = pcall(sjson.decode, data)
                 if isjson then
                     buffer:replace(datas.source, datas.offset)
+                end
+                ws2812.write(buffer)
+            end
+    App.mqtt_in_topics[App.mqtt.base_topic.."WRITE_BUFFER"]= function(data)
+                -- Write leds 
+                -- ex : msg.payload = "{"offset":5,"source":[1,0,0,1,0,0,1],"color":[255,255,0],"fond":[50,50,50]}"
+                local isjson, datas = pcall(sjson.decode, data)
+                if isjson then
+                    local source = ""
+                    local color = datas.color or {255,255,255}
+                    local fond = datas.fond or {0,0,0}
+                    local i, led
+                    for i, led in ipairs(datas.source) do
+                        if led == 1 then
+                            source = source .. string.char(unpack(color))
+                        else
+                            source = source .. string.char(unpack(fond))
+                        end
+                    end
+                    if #source>0 then
+                        buffer:replace(source, datas.offset)
+                    end
                 end
                 ws2812.write(buffer)
             end
