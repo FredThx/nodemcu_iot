@@ -15,8 +15,6 @@
 -------------------------------------------------
 
 --TODO
--- * finir multibuffer
---      * FADE et mettre en place un vrai fade durable sur les 3 buffers
 -- * du vrai multi buffers (nb dynamique)
 
 
@@ -114,7 +112,6 @@ do
     App.mqtt_in_topics = {}
     
     App.mqtt_in_topics[App.mqtt.base_topic.."LEDS"] = {
-                -- Turn off all the leds
                 ["OFF"]=function()
                             leds_on = false
                             buffer:fill(0, 0, 0)
@@ -133,9 +130,7 @@ do
                         }
     
     App.mqtt_in_topics[App.mqtt.base_topic.."LUMINOSITE"]= function(data)
-                -- Change the luminosity
-                -- ex : msg.payload = "10" ou "-5"
-                --TODO : voir multibuffers
+                -- Change the luminosity from 0 to 256
                 data = tonumber(data)
                 if data then
                     luminosite = data
@@ -217,6 +212,24 @@ do
                     end
                 end
                 write_buffers()
+            end
+      App.mqtt_in_topics[App.mqtt.base_topic.."EFFECT"]= function(data)
+                -- Execute a effect (WS2812 effects Module)
+                -- ex : msg.payload = "{"mode":"blink", "speed":100, "brightness":50, "color:[0,255,0], "buffer":"fond"}"
+                --      msg.payload = "stop"
+                                local isjson, datas = pcall(sjson.decode, data)
+                if isjson then
+                    local buf = select_buffer(datas.buffer)
+                    ws2812_effects.init(buf)
+                    if datas.speed then ws2812_effects.set_speed(datas.speed) end
+                    if datas.brightness then ws2812_effects.set_brightness(datas.brightness) end
+                    if datas.color then ws2812_effects.set_color(unpack(datas.color)) end
+                    if datas.delay then ws2812_effects.set_delay(datas.delay) end
+                    if datas.mode then ws2812_effects.set_mode(datas.mode, unpack(datas.params or {})) end
+                    ws2812_effects.start()
+                elseif data == "stop" then
+                    ws2812_effects.stop()
+                end
             end
 end
 
