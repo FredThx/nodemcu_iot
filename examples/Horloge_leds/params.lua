@@ -13,6 +13,10 @@
 --    file, gpio, net, node,tmr, uart, wifi
 --    mqtt, ws2812
 -------------------------------------------------
+--TODO :
+--		* Améliorer efficacité Leds.write_buffers (actuellement 160ms)
+--
+
 
 local App = {}
 
@@ -24,34 +28,34 @@ do
     ws2812.init()
 	Leds={}
     Leds.nb = 7*21
-    Leds.buffer=ws2812.newBuffer(Leds.nb,3)
     Leds.buffers={_fond=ws2812.newBuffer(Leds.nb,3)}
 	Leds.luminosite = {_fond=256}
-    ws2812.write(buffer)
     Leds.on = true
     -- Fonctions pour gestion LEDS
     Leds.write_buffers = function()
-        Leds.buffer:fill(0, 0, 0)
-		local p={}
-		for buf_name,buf in pairs(Leds.buffers) do
-			table.insert(p,Leds.luminosite[buf_name])
-			table.insert(p,buf)
-		end
-		Leds.buffer:mix(unpack(p))
-        if Leds.on then
-            -- inverse les colonnes paires (ce qui a été gagné en cablage est pardu en efficacité ici!)
-            local buf_str=Leds.buffer:dump()
+		--local now = tmr.now()
+		if Leds.on then
+			local buffer = ws2812.newBuffer(Leds.nb,3)
+			local p={}
+			for buf_name,buf in pairs(Leds.buffers) do
+				table.insert(p,Leds.luminosite[buf_name])
+				table.insert(p,buf)
+			end
+			buffer:mix(unpack(p))        
+            -- inverse les colonnes paires (ce qui a été gagné en cablage est pardu en efficacité ici!) : 160ms pour la fonction
+			local buf_str=buffer:dump()
             for i=0,Leds.nb/7-1 do
                 local colonne = ""
                 if i%2==1 then
                     for pixel in string.gmatch(buf_str:sub(i*7*3+1,(i*7+7)*3),"...") do
                         colonne = pixel .. colonne
                     end
-                    Leds.buffer:replace(colonne,i*7+1)
+					buffer:replace(colonne,i*7+1)
                 end
             end
-            ws2812.write(Leds.buffer)
+			ws2812.write(buffer)
         end
+		--print(tmr.now()-now)
     end
 
     Leds.select_buffer = function(buffer_name)
@@ -65,7 +69,7 @@ do
             return Leds.buffers['_fond']
         end
     end
-    
+    Leds.write_buffers()
     --Bouton
     pin_bt = 5
     gpio.mode(pin_bt,gpio.INT)
@@ -115,8 +119,8 @@ do
     App.mqtt_in_topics[App.mqtt.base_topic.."LEDS"] = {
                 ["OFF"]=function()
                             Leds.on = false
-                            Leds.buffer:fill(0, 0, 0)
-                            ws2812.write(Leds.buffer)   
+							local buffer = ws2812.newBuffer(Leds.nb,3)
+							ws2812.write(buffer)   
                         end,
                 ["ON"]=function()
                             Leds.on = true
