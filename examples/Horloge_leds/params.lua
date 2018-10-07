@@ -14,10 +14,6 @@
 --    mqtt, ws2812
 -------------------------------------------------
 
---TODO
--- * du vrai multi buffers (nb dynamique)
-
-
 local App = {}
 
 do
@@ -26,50 +22,55 @@ do
 
     -- ruban de leds
     ws2812.init()
-    nb_leds = 7*21
-    buffer=ws2812.newBuffer(nb_leds,3)
-    buffers={}
-    buffers.horloge=ws2812.newBuffer(nb_leds,3)
-    buffers.fond=ws2812.newBuffer(nb_leds,3)
-    buffers.jeux=ws2812.newBuffer(nb_leds,3)
-    luminosite = 256
+	Leds={}
+    Leds.nb = 7*21
+    Leds.buffer=ws2812.newBuffer(Leds.nb,3)
+    Leds.buffers={_fond=ws2812.newBuffer(Leds.nb,3)}
+	Leds.luminosite = {_fond=256}
     ws2812.write(buffer)
-    leds_on = true
+    Leds.on = true
     -- Fonctions pour gestion LEDS
-    function write_buffers()
-        buffer:fill(0, 0, 0)
-        buffer:mix(luminosite,buffers.horloge,luminosite,buffers.fond,luminosite,buffers.jeux)
-        if leds_on then
+    Leds.write_buffers = function()
+        Leds.buffer:fill(0, 0, 0)
+		local p={}
+		for buf_name,buf in pairs(Leds.buffers) do
+			table.insert(p,Leds.luminosite[buf_name])
+			table.insert(p,buf)
+		end
+		Leds.buffer:mix(unpack(p))
+        if Leds.on then
             -- inverse les colonnes paires (ce qui a été gagné en cablage est pardu en efficacité ici!)
-            local buf_str=buffer:dump()
-            for i=0,nb_leds/7-1 do
+            local buf_str=Leds.buffer:dump()
+            for i=0,Leds.nb/7-1 do
                 local colonne = ""
                 if i%2==1 then
                     for pixel in string.gmatch(buf_str:sub(i*7*3+1,(i*7+7)*3),"...") do
                         colonne = pixel .. colonne
                     end
-                    buffer:replace(colonne,i*7+1)
+                    Leds.buffer:replace(colonne,i*7+1)
                 end
             end
-            ws2812.write(buffer)
+            ws2812.write(Leds.buffer)
         end
     end
 
-
-    function select_buffer(buffer_name)
+    Leds.select_buffer = function(buffer_name)
         if buffer_name then
-            return buffers[buffer_name]
+            if not Leds.buffers[buffer_name] then
+				Leds.buffers[buffer_name]= ws2812.newBuffer(Leds.nb,3)
+				Leds.luminosite[buffer_name] = 256
+			end
+			return Leds.buffers[buffer_name]
         else
-            return buffers['fond']
+            return Leds.buffers['_fond']
         end
     end
     
     --Bouton
     pin_bt = 5
-
     gpio.mode(pin_bt,gpio.INT)
     gpio.trig(pin_bt, "up", function(level)
-            if leds_on then
+            if Leds.on then
                 App.mqtt_in_topics[App.mqtt.base_topic.."LEDS"]["OFF"]()
             else
                 App.mqtt_in_topics[App.mqtt.base_topic.."LEDS"]["ON"]()
@@ -113,29 +114,41 @@ do
     
     App.mqtt_in_topics[App.mqtt.base_topic.."LEDS"] = {
                 ["OFF"]=function()
-                            leds_on = false
-                            buffer:fill(0, 0, 0)
-                            ws2812.write(buffer)   
+                            Leds.on = false
+                            Leds.buffer:fill(0, 0, 0)
+                            ws2812.write(Leds.buffer)   
                         end,
                 ["ON"]=function()
-                            leds_on = true
-                            write_buffers()
+                            Leds.on = true
+                            Leds.write_buffers()
                         end,
                  ["CLEAR"]=function()
-                            for k,buf in pairs(buffers) do
+                            for k,buf in pairs(Leds.buffers) do
                                 buf:fill(0,0,0)
                             end
-                            write_buffers()
+                            Leds.write_buffers()
                         end
                         }
     
     App.mqtt_in_topics[App.mqtt.base_topic.."LUMINOSITE"]= function(data)
-                -- Change the luminosity from 0 to 256
+                -- globale : msg.payload = "200"
+				-- par buffer : msg.payload = "{"horloge":100}"
                 data = tonumber(data)
                 if data then
-                    luminosite = data
-                    write_buffers()
-                end
+                    for buf_name, luminosite in pairs(Leds.buffers) do
+						Leds.buffers[buf_name] = luminosite / 256 * data
+					end
+                else
+					local isjson, datas = pcall(sjson.decode, data)
+					if isjson then
+						for buf_name, luminosite in pairs(data) do
+							if Ledsbuffers[buf_name] then
+								Ledsbuffers[buf_name]=luminosite
+							end
+						end
+					end
+				end
+				Leds.write_buffers()
             end
     
     App.mqtt_in_topics[App.mqtt.base_topic.."SHIFT"]= function(data)
@@ -143,24 +156,25 @@ do
                 -- ex : msg.payload = "1" (or -2)
                 -- ex : msg.payload = "{"value":1,"mode":1,"i":1,"j":10}"
                 if tonumber(data) then
-                    for k,buf in pairs(buffers) do
+                    for k,buf in pairs(Leds.buffers) do
                         buf:shift(tonumber(data))
                     end
                 else
                     local isjson, datas = pcall(sjson.decode, data)
                     if isjson then
-                        local buf = select_buffer(datas.buffer)
+                        local buf = Leds.select_buffer(datas.buffer)
                         buf:shift(datas.value, datas.mode , datas.i , datas.j)
                     end
                 end
-                write_buffers()
+                Leds.write_buffers()
             end
+	
     App.mqtt_in_topics[App.mqtt.base_topic.."SET"]= function(data)
                 -- Set a led
                 -- ex : msg.payload = "{"index":5,"color":[0,255,0],"buffer":"horloge"}"
                 local isjson, datas = pcall(sjson.decode, data)
                 if isjson then
-                    local buf = select_buffer(datas.buffer)
+                    local buf = Leds.select_buffer(datas.buffer)
                     if type(datas.index)== 'table' then
                         for k,index in ipairs(datas.index) do
                             if type(datas.color[1])=='table' then
@@ -173,21 +187,22 @@ do
                         buf:set(datas.index, datas.color)
                     end
                 end
-                write_buffers()
+                Leds.write_buffers()
             end
+	
     App.mqtt_in_topics[App.mqtt.base_topic.."FILL"]= function(data)
                 -- Fill all the leds
                 -- ex : msg.payload = "[0,0,10]" ou msg.payload = "{buffer:"jeux",color:"[0,255,0]}"
                 local isjson, datas = pcall(sjson.decode, data)
                 if isjson then
-                    buf = select_buffer(datas.buffer)
+                    buf = Leds.select_buffer(datas.buffer)
                     if datas.color then
                         buf:fill(unpack(datas.color))
                     else
                         buf:fill(unpack(datas))
                     end
                 end
-                ws2812.write(buffer)
+                Leds.write_buffers()
             end
 
     App.mqtt_in_topics[App.mqtt.base_topic.."WRITE_BUFFER"]= function(data)
@@ -195,7 +210,7 @@ do
                 -- ex : msg.payload = "{"offset":5,"source":[1,0,0,1,0,0,1],"color":[255,255,0],"fond":[50,50,50],"buffer":"horloge"}"
                 local isjson, datas = pcall(sjson.decode, data)
                 if isjson then
-                    local buf = select_buffer(datas.buffer)
+                    local buf = Leds.select_buffer(datas.buffer)
                     local source = ""
                     local color = datas.color or {255,255,255}
                     local fond = datas.fond or {0,0,0}
@@ -211,15 +226,16 @@ do
                         buf:replace(source, datas.offset)
                     end
                 end
-                write_buffers()
+                Leds.write_buffers()
             end
+	
       App.mqtt_in_topics[App.mqtt.base_topic.."EFFECT"]= function(data)
                 -- Execute a effect (WS2812 effects Module)
                 -- ex : msg.payload = "{"mode":"blink", "speed":100, "brightness":50, "color:[0,255,0], "buffer":"fond"}"
                 --      msg.payload = "stop"
-                                local isjson, datas = pcall(sjson.decode, data)
+                local isjson, datas = pcall(sjson.decode, data)
                 if isjson then
-                    local buf = select_buffer(datas.buffer)
+                    local buf = Leds.select_buffer(datas.buffer)
                     ws2812_effects.init(buf)
                     if datas.speed then ws2812_effects.set_speed(datas.speed) end
                     if datas.brightness then ws2812_effects.set_brightness(datas.brightness) end
