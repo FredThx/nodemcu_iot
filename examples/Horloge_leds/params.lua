@@ -21,7 +21,7 @@
 local App = {}
 
 do
-    --App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
+    App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
     App.msg_debug = false -- if true : send messages (ex : "MQTT send : ok")
 
     -- ruban de leds
@@ -176,6 +176,7 @@ do
     App.mqtt_in_topics[App.mqtt.base_topic.."SET"]= function(data)
                 -- Set a led
                 -- ex : msg.payload = "{"index":5,"color":[0,255,0],"buffer":"horloge"}"
+				-- ex : msg.paylaod = "{"index":[5,9,6], color:[[0,255,0],[0,255,0],[0,0,0]],"buffer":"horloge"}"
                 local isjson, datas = pcall(sjson.decode, data)
                 if isjson then
                     local buf = Leds.select_buffer(datas.buffer)

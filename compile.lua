@@ -27,7 +27,8 @@ progs={ "init_mqtt",
         "mcp3201",
         "rotary",
         "vl6180x",
-        "led_rbv"
+        "led_rbv",
+        "flowmeter",
         }
 files = file.list()
 for k, prog in pairs(progs) do
