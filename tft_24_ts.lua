@@ -51,6 +51,9 @@
 -- Boutons :    - passez les arguments comme table (avec arguemnts facultatifs
 --              - ajout text (et font et couleur text)
 --              - changer apparence quand click
+--              - Intégration dans le projet nodemcu_iot
+--                  - button => mqtt "PUSH"
+--                  - mqtt => zone de text 
 
 
 
@@ -152,7 +155,7 @@ do
         M.ts_callback = ts_callback
     end
 
-    local add_button = function(x,y,h,w,color,callback)
+    local add_button = function(x,y,h,w,color,text, callback)
         table.insert(M.buttons, {x0 = x,
                                 y0 = y,
                                 x1 = x + w,
@@ -161,6 +164,10 @@ do
                                 callback = callback})
         M.disp:setColor(unpack(color))
         M.disp:drawRBox(x,y,w,h,5)
+        M.disp:setFont(ucg.font_helvB10_hr)
+        M.disp:setColor(255,255,255)
+        M.disp:drawString(x+5,y+h-5,0,text)
+        
     end
 
 
