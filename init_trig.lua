@@ -34,7 +34,7 @@ if App.mqtt_trig_topics then
                                 trig.counter = trig.counter+1
                                 if trig.counter>trig.divisor then
                                     local msg
-                                    no_err, msg = pcall(trig.message,level,when,eventcount)
+                                    no_err, msg = pcall(trig.message, level,when or tmr.now(),eventcount or 1)
                                     if no_erre and msg then
                                         --print(topic.." : "..msg)
 									    App.mqtt_publish(msg, topic, trig)
@@ -53,7 +53,7 @@ if App.mqtt_trig_topics then
                             trig.counter = trig.counter+1
                             if trig.counter>trig.divisor then
                                 local msg
-                                no_err, msg = pcall(trig.message,level,when,eventcount)
+                                no_err, msg = pcall(trig.message, level,when or tmr.now(),eventcount or 1)
                                 if no_err and msg then
                                     --print(topic.." : "..msg)
 								    App.mqtt_publish(msg, topic, trig)
@@ -69,7 +69,7 @@ if App.mqtt_trig_topics then
                         gpio.trig(trig.pin, "both" ,function(level,when,eventcount)
                             if not trig.actif then
                                 local msg
-                                no_err, msg = pcall(trig.message,level,when,eventcount)
+                                no_err, msg = pcall(trig.message, level,when or tmr.now(),eventcount or 1)
                                 if no_err and msg then
                                     --print(topic.." : "..msg)
                                     App.mqtt_publish(msg, topic, trig)
@@ -84,7 +84,7 @@ if App.mqtt_trig_topics then
                         print_log("     function sans diviseur")
                         gpio.trig(trig.pin, trig.type ,function(level,when,eventcount)
                             local msg
-                            no_err, msg = pcall(trig.message, level,when,eventcount)
+                            no_err, msg = pcall(trig.message, level,when or tmr.now(),eventcount or 1)
                             if no_err and msg then
                                 --print(topic.." : "..msg)
                                 App.mqtt_publish(msg, topic, trig)
@@ -200,7 +200,7 @@ if App.mqtt_trig_topics then
         end
     end
     -- free memory
-    App.mqtt_trig_topics = nil
+    --App.mqtt_trig_topics = nil
     print_log('Init_trig : ok')
 end
 

@@ -2,7 +2,7 @@
 -- Réalise la connection WIFI
 -- quand établie, execute on_wifi_connected()
 --TODO : supprimer ce module!
-
+--       ou alors faire wifi.sta.clearconfig() et test si wifi.stat.ssid is in App.ssid
 
 function wait_for_wifi_conn()
 	local wifi_alarm = tmr.create()

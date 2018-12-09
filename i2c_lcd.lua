@@ -23,7 +23,7 @@
 --                     "row": [0-5],        (si omis : 0)
 --                     "text": "abcdef",      (si omis : "")
 --                      "clear":false|true      (si omis : false)
---                      "led":false|true        
+--                      "led":false|true     }   
 --
 -------------------------------------------------
 -- Modules nécessaires dans le firmware :

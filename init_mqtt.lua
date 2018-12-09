@@ -9,6 +9,7 @@
 
 -- Creation du client mqtt avec 120s de keepalive
 App.mqtt.client = mqtt.Client(App.mqtt.client_name, 120, App.mqtt.user, App.mqtt.pass)
+App.mqtt.client:lwt(App.mqtt.base_topic .. "_SYS", "LWT")
 
 -- Deamon quand perte serveur mqtt
 App.mqtt.client:on("offline", function(con) 
@@ -42,9 +43,8 @@ App.mqtt.client:on("message", function(conn, topic, data)
     end
 end)
 
--- when mqtt connect : subscribe and call App.mqtt.connected_callback
+-- when mqtt connect : call App.mqtt.connected_callback
 App.mqtt.client:on("connect", function(client)
-				
 			end)
 
 
@@ -67,6 +67,7 @@ function mqtt_connect()
 									print_log('mqtt_connected_callback call...')
 									pcall (App.mqtt.connected_callback)
 								end
+                                App.mqtt_publish("INIT",App.mqtt.base_topic.."HELLO")
 							end)
             end
         end)
