@@ -44,29 +44,27 @@
 -------------------------------------------------
 -- Modules nécessaires dans le firmware :
 --    gpio,tmr
---    ucg (with ili9341_18x240x320_hw_spi), xpt2046
+--    spi, ucg (with ili9341_18x240x320_hw_spi), xpt2046
 -------------------------------------------------
 
 --TODO
--- Boutons :    - passez les arguments comme table (avec arguemnts facultatifs
+-- Boutons :    - passez les arguments comme table (avec arguments facultatifs
 --              - ajout text (et font et couleur text)
 --              - changer apparence quand click
 --              - Intégration dans le projet nodemcu_iot
+--                  - creation de bouton via mqtt msg
 --                  - button => mqtt "PUSH"
---                  - mqtt => zone de text 
+--                  - mqtt => zone de text
 
-
-
-local M
+local M = {}
 do
-    
     --default values
     local TFT_CS = 0
     local TFT_DC =  8
     local TS_CS = 3
     local TS_IRQ = 1
 
-    local init = function(tft_cs, tft_dc, ts_cs, ts_irq, ts_callback)
+    function M.init(tft_cs, tft_dc, ts_cs, ts_irq, ts_callback)
         tft_cs = tft_cs or TFT_CS
         tft_dc = tft_dc or TFT_DC
         ts_cs = ts_cs or TS_CS
@@ -96,10 +94,7 @@ do
             -- CALIBRATION
             M.disp:clearScreen()
             tft_ts.disp:drawString(40,160,0,"Calibration...")
-            local x0 = 10
-            local y0 = 10
-            local x1 = 230
-            local y1 = 310
+            local x0, y0, x1, y1 = 10, 10, 230, 310
             local get_raw_cal = function(x,y)
                 M.disp:setColor(255,255,255)
                 M.disp:drawVLine(x,y-10,20)
@@ -142,39 +137,60 @@ do
                     end
                     -- Buttons
                     for i, button in ipairs(M.buttons) do
-                        if x > button.x0 and x < button.x1 
-                                and y > button.y0 and y < button.y1 then
+                        if x > button.x and x < (button.x + buton.w)
+                                and y > button.y and y < (button.y + button.h) then
                             pcall(button.callback)
                         end
                     end
                 end
             end)
     end
-    
-    local on_touch = function(ts_callback)
+
+    function M.on_touch(ts_callback)
         M.ts_callback = ts_callback
     end
 
-    local add_button = function(x,y,h,w,color,text, callback)
-        table.insert(M.buttons, {x0 = x,
-                                y0 = y,
-                                x1 = x + w,
-                                y1 = y + h,
-                                color = color,
-                                callback = callback})
-        M.disp:setColor(unpack(color))
-        M.disp:drawRBox(x,y,w,h,5)
-        M.disp:setFont(ucg.font_helvB10_hr)
-        M.disp:setColor(255,255,255)
-        M.disp:drawString(x+5,y+h-5,0,text)
-        
+    function M.set_default(t,t_def)
+        for key, val in pairs(t_def) do
+          if not t[key] then
+            t[key] = val
+          end
+        end
     end
 
+    function M.add_button(button)
+      -- button={
+      --        x=x,
+      --        y=y,
+      --        h=h,
+      --        w=w,
+      --        color={r,g,b},
+      --        text_color{r,g,b}
+      --        text = text,
+      --        callback = function(x,y) ... end}
+      M.set_default(button, {x=0,y=0,h=20,w=200, color = {0,0,255}, text_color = {255,255,255}})
+      table.insert(M.buttons, button)
+        M.disp:setColor(unpack(button.color))
+        M.disp:drawRBox(button.x,button.y,button.w,button.h,5)
+        M.disp:setFont(ucg.font_helvB10_hr)
+        M.disp:setColor(unpack(button.text_color))
+        M.disp:drawString(button.x+5,button.y+button.h-5,0,button.text)
+    end
 
-    M =  {
-            init = init,
-            on_touch = on_touch,
-            add_button = add_button
-        }
+    function M.add_text(text)
+      -- test = {
+      --  x=x,
+      --  y=y,
+      --  color = {r,g,b}
+      --  text = text
+      -- font = font
+      -- dir = direction (One of the values 0 (left to right), 1 (top down), 2 (right left) or 3 (bottom up))
+      --  }
+      M.set_default(text, {x=0,y=12,color = {255,255,255}, font = ucg.font_helvB12_hr, dir = 0})
+      M.disp:setColor(unpack(text.color))
+      M.disp:setFont(ucg.font_helvB10_hr)
+      M.disp:drawString(text.x,text.y,text.dir,text.text)
+   end
+
 end
 return M
