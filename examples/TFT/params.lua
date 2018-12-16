@@ -28,7 +28,7 @@ do
 
     -- THERMOMETRE
     thermometer = require 'ds1820_reader'
-    thermometer.init(1)
+    thermometer.init(2)
     ------------------
     -- Params WIFI 
     ------------------

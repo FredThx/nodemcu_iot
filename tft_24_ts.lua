@@ -49,12 +49,7 @@
 -------------------------------------------------
 
 --TODO
--- Boutons :    -
---              - changer apparence quand click
---              - Intégration dans le projet nodemcu_iot
---                  - creation de bouton via mqtt msg
---                  - button => mqtt "PUSH"
---                  - mqtt => zone de text
+--    - changer apparence quand click bouton (gestion push down / up)
 
 local M = {}
 do
@@ -203,7 +198,7 @@ do
     end
 
     function M.draw_label(param)
-        if param.format and param.text then param.text = string.format(param.format, param.text) end
+        if param.format and param.text then param.text = string.format(param.format, tonumber(param.text) or 0)  end
         M.disp:setFont(param.font or ucg.font_helvB12_hr)
         if param.back_color then -- FONT_MODE_SOLID don't work with all fonts!
             M.disp:setColor(unpack(param.back_color))
@@ -224,7 +219,7 @@ do
     end
 
     function M.free()
-        --Use this when all button and label are set : 1600 bytes free
+        --Use this when all button and label are set : 1900 bytes free
         M.init = nil
         M.add_button = nil
         M.add_label = nil
