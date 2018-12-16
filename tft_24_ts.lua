@@ -172,13 +172,13 @@ do
       --        text_color{r,g,b}
       --        text = text, font = ucg.font_..,
       --        callback = function(x,y) ... end}
-      M.set_default(param, {x=0,y=0,h=20,w=200, color = {0,0,255}, text_color = {255,255,255}, font = ucg.font_helvB10_hr})
-      table.insert(M.buttons, param)
-      M.disp:setColor(unpack(param.color))
+      M.set_default(param, {x=0,y=0,h=20,w=200})
+      M.disp:setColor(unpack(param.color or {0,0,255}))
       M.disp:drawRBox(param.x,param.y,param.w,param.h,5)
-      M.disp:setFont(param.font)
-      M.disp:setColor(unpack(param.text_color))
+      M.disp:setFont(param.font or ucg.font_helvB10_hr)
+      M.disp:setColor(unpack(param.text_color or {255,255,255}))
       M.disp:drawString(param.x+5,param.y+param.h-5,0,param.text)
+      table.insert(M.buttons, param)
     end
 
     function M.add_label(param)
@@ -192,41 +192,44 @@ do
       -- dir = direction (One of the values 0 (left to right), 1 (top down), 2 (right left) or 3 (bottom up))
       -- 
       --  }
-      M.set_default(param, {x=0,y=12, color = {255,255,255}, font = ucg.font_helvB12_hr, dir = 0})
+      M.set_default(param, {x=0,y=12})
       if param.variable then
         local variable = param.variable
         param.variable = nil
         M.variables[variable]= param
         param.back_color = param.back_color or {0,0,0}
       end
-      if param.format and param.text then param.text = string.format(param.format, param.text) end
-      M.disp:setFont(param.font)
-      if param.back_color then -- FONT_MODE_SOLID don't work with all fonts!
-        M.disp:setColor(unpack(param.back_color))
-        M.disp:drawBox(param.x  ,
-                      param.y - 1 - M.disp:getFontAscent(),
-                     param.size or M.disp:getStrWidth(param.text or " "),
-                      M.disp:getFontAscent() - M.disp:getFontDescent(),5)
-      end
-      M.disp:setColor(unpack(param.color))
-      M.disp:drawString(param.x,param.y,param.dir ,param.text or "")
+      M.draw_label(param)
+    end
+
+    function M.draw_label(param)
+        if param.format and param.text then param.text = string.format(param.format, param.text) end
+        M.disp:setFont(param.font or ucg.font_helvB12_hr)
+        if param.back_color then -- FONT_MODE_SOLID don't work with all fonts!
+            M.disp:setColor(unpack(param.back_color))
+            M.disp:drawBox(param.x  ,
+                          param.y - 1 - M.disp:getFontAscent(),
+                         param.size or M.disp:getStrWidth(param.text or " "),
+                          M.disp:getFontAscent() - M.disp:getFontDescent(),5)
+        end
+        M.disp:setColor(unpack(param.color or {255,255,255}))
+        M.disp:drawString(param.x,param.y,param.dir or 0,param.text or "")
     end
 
     function M.set_label(variable, text)
         if M.variables[variable] then
             M.variables[variable].text = text
-            M.add_label(M.variables[variable])
+            M.draw_label(M.variables[variable])
         end
     end
 
-    function M.add_text_list(param)
-        -- param = {
-        --  x, y,
-        --  color, back_color,
-        -- font
-        -- w = pixels, lines=5
-        --      }
-        --TODO
+    function M.free()
+        --Use this when all button and label are set : 1600 bytes free
+        M.init = nil
+        M.add_button = nil
+        M.add_label = nil
+        M.set_default = nil
+        M.free = nil
     end
 
 end

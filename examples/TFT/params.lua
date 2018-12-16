@@ -20,11 +20,15 @@ local App = {}
 do
     App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
     App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
-
+    
+    -- ECRAN
     tft_ts = require 'tft_24_ts'
     tft_ts.init()
     tft_ts.init = nil --freememory
 
+    -- THERMOMETRE
+    thermometer = require 'ds1820_reader'
+    thermometer.init(1)
     ------------------
     -- Params WIFI 
     ------------------
@@ -47,8 +51,14 @@ do
     }
     
     -- Messages MQTT sortants
-    --App.mesure_period = 60 * 1000
+    App.mesure_period = 60 * 1000
     App.mqtt_out_topics = {}
+    App.mqtt_out_topics[App.mqtt.base_topic.."temperature"]={
+                message = function()
+                        thermometer.read(nil, function(temp)
+                                App.mqtt_publish(temp, App.mqtt.base_topic.."temperature")
+                            end)
+                    end}
     
     -- Actions sur messages MQTT entrants
     App.mqtt_in_topics = {}    
