@@ -31,7 +31,8 @@ do
             "vl6180x",
             "led_rbv",
             "flowmeter",
-            "motor_l298b"
+            "motor_l298b",
+            "tft_24_ts",
             }
     files = file.list()
     for k, prog in pairs(progs) do
