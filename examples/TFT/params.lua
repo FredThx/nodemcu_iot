@@ -2,7 +2,7 @@
 --  Projet : des IOT a base de nodemcu (ESP8266)
 --           qui communiquent en MQTT
 -------------------------------------------------
---  Auteur : FredThx  
+--  Auteur : FredThx
 -------------------------------------------------
 --  Ce fichier : paramètres pour Ecran TFT TOUCH SCREEN
 --               avec
@@ -18,19 +18,19 @@
 local App = {}
 
 do
-    App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
+    App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes
     App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
-    
+
     -- ECRAN
     tft_ts = require 'tft_24_ts'
-    tft_ts.init()
+    tft_ts.init() -- default pins : cs=0, dc=8, cs=3, irq=1, led = 4
     tft_ts.init = nil --freememory
 
     -- THERMOMETRE
     thermometer = require 'ds1820_reader'
-    thermometer.init(2)
+    thermometer.init(2) -- pin D2
     ------------------
-    -- Params WIFI 
+    -- Params WIFI
     ------------------
     App.net = {
             ssid = "T-HOME",
@@ -49,7 +49,7 @@ do
         client_name = "NODE-TFT",
         base_topic = "T-HOME/TFT/"
     }
-    
+
     -- Messages MQTT sortants
     App.mesure_period = 60 * 1000
     App.mqtt_out_topics = {}
@@ -59,13 +59,13 @@ do
                                 App.mqtt_publish(temp, App.mqtt.base_topic.."temperature")
                             end)
                     end}
-    
+
     -- Actions sur messages MQTT entrants
-    App.mqtt_in_topics = {}    
-    App.mqtt_in_topics[App.mqtt.base_topic.."ADD_BUTTON"] = 
+    App.mqtt_in_topics = {}
+    App.mqtt_in_topics[App.mqtt.base_topic.."ADD_BUTTON"] =
                 function(data)
                     --pcall(function()
-                                local button = sjson.decode(data)                          
+                                local button = sjson.decode(data)
                                 button.callback = function()
                                         App.mqtt_publish(button.button, App.mqtt.base_topic.."PRESSED")
                                     end
@@ -73,17 +73,17 @@ do
                     --       end)
                 end
 
-    App.mqtt_in_topics[App.mqtt.base_topic.."ADD_LABEL"] = 
+    App.mqtt_in_topics[App.mqtt.base_topic.."ADD_LABEL"] =
                 function(data)
                     local label = sjson.decode(data)
                     tft_ts.add_label(label)
                 end
-    App.mqtt_in_topics[App.mqtt.base_topic.."SET_LABEL"] = 
+    App.mqtt_in_topics[App.mqtt.base_topic.."SET_LABEL"] =
                 function(data)
                     local var = sjson.decode(data)
                     tft_ts.set_label(var.variable, var.text)
                 end
-                
+
     App.mqtt_in_topics[App.mqtt.base_topic.."CMD"] = {
             ["RAZ"]=function()
                         tft_ts.disp:clearScreen()
@@ -91,6 +91,6 @@ do
                     end,
             }
 
-    
+
 end
 return App

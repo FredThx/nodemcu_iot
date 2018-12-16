@@ -15,6 +15,7 @@
 --              TFT_CS = D0 (you can change it expept on WEMOS SHIELD)
 --              TFT_DC = D8 (you can change it expept on WEMOS SHIELD)
 --              TS_CS = D3 (you can change it)
+--              TS_LED = D4 (you must set it with welding)
 --      Add a wire between JP4-TS_IRQ and D1 (you can change it)
 --
 -- usage :
@@ -58,12 +59,14 @@ do
     local TFT_DC =  8
     local TS_CS = 3
     local TS_IRQ = 1
+    local TS_LED = 4
 
-    function M.init(tft_cs, tft_dc, ts_cs, ts_irq, ts_callback)
+    function M.init(tft_cs, tft_dc, ts_cs, ts_irq, ts_led, ts_callback)
         tft_cs = tft_cs or TFT_CS
         tft_dc = tft_dc or TFT_DC
         ts_cs = ts_cs or TS_CS
         ts_irq = ts_irq or TS_IRQ
+        M.ts_led = ts_led or TS_LED
         local bus = 1
         local tft_res = nil
         M.ts_callback = ts_callback
@@ -78,6 +81,10 @@ do
         --INIT TS
         xpt2046.init(ts_cs, ts_irq, M.disp:getHeight(), M.disp:getWidth()) -- height and width inverted
         gpio.mode(ts_irq,gpio.INT,gpio.PULLUP)
+        -- INIT TS_LED
+        gpio.mode(M.ts_led, gpio.OUTPUT)
+        gpio.write(M.ts_led, gpio.HIGH)
+        -- CALIBRATION
         local calibration = false
         if file.open("calibration.json","r") then
             local r
@@ -86,7 +93,6 @@ do
                         end)
         end
         if  not calibration then
-            -- CALIBRATION
             M.disp:clearScreen()
             tft_ts.disp:drawString(40,160,0,"Calibration...")
             local x0, y0, x1, y1 = 10, 10, 230, 310
@@ -124,22 +130,37 @@ do
         xpt2046.setCalibration(unpack(calibration))
         M.buttons = {}
         M.variables = {}
+        -- Economiseur d'écran
+        M.timer = tmr.create()
+        M.screen_saver(300000)
+        -- Touch down!
         gpio.trig(ts_irq, "down", function()
-                local x,y = xpt2046.getPosition()
-                if xpt2046.isTouched() then
-                    -- Callback "on_touch"
-                    if M.ts_callback then
-                        pcall(M.ts_callback, x,y)
-                    end
-                    -- Buttons
-                    for i, button in ipairs(M.buttons) do
-                        if x > button.x and x < (button.x + button.w)
-                                and y > button.y and y < (button.y + button.h) then
-                            pcall(button.callback)
-                        end
-                    end
+                if gpio.read(M.ts_led)==gpio.LOW then
+                  gpio.write(M.ts_led, gpio.HIGH)
+                else
+                  local x,y = xpt2046.getPosition()
+                  if xpt2046.isTouched() then
+                      -- Callback "on_touch"
+                      if M.ts_callback then
+                          pcall(M.ts_callback, x,y)
+                      end
+                      -- Buttons
+                      for i, button in ipairs(M.buttons) do
+                          if x > button.x and x < (button.x + button.w)
+                                  and y > button.y and y < (button.y + button.h) then
+                              pcall(button.callback)
+                          end
+                      end
+                  end
                 end
+                M.screen_saver(300000)
             end)
+    end
+
+    function M.screen_saver(duration)
+        M.timer:alarm(duration, tmr.ALARM_SINGLE, function()
+              gpio.write(M.ts_led, gpio.LOW)
+          end)
     end
 
     function M.on_touch(ts_callback)
@@ -185,7 +206,7 @@ do
       --  variable = "maVar", size = pixels, format = "%04d"
       -- font = font,
       -- dir = direction (One of the values 0 (left to right), 1 (top down), 2 (right left) or 3 (bottom up))
-      -- 
+      --
       --  }
       M.set_default(param, {x=0,y=12})
       if param.variable then
