@@ -21,9 +21,11 @@
 -- usage :
 --  tft_ts = require 'tft_24_ts'
 --  tft_cs, tft_dc, ts_cs, ts_irq = 0, 8, 3, 1
---  tft_ts.init(tft_cs, tft_dc, ts_cs, ts_irq, ts_callback) or tft_ts.init() to use default
+--  tft_ts.init(tft_cs, tft_dc, ts_cs, ts_irq, ts_callback, ts_angle) or tft_ts.init() to use default
+--      ts_angle = 0 or nil | 90 | 180 | 270
 --      if file calibration.json is not present, do a touch screen calibration
 --  tft_ts.init = nil --freememory
+--  tft.ts.free()  -- better free memory (after all objects are created)
 --  tft_ts.on_touch(function(x,y) print(x,y) end)
 --  tft_ts.add_button(x,y,h,w,{r,b,v},callback)
 --
@@ -61,12 +63,13 @@ do
     local TS_IRQ = 1
     local TS_LED = 4
 
-    function M.init(tft_cs, tft_dc, ts_cs, ts_irq, ts_led, ts_callback)
+    function M.init(tft_cs, tft_dc, ts_cs, ts_irq, ts_led, ts_callback, ts_angle)
         tft_cs = tft_cs or TFT_CS
         tft_dc = tft_dc or TFT_DC
         ts_cs = ts_cs or TS_CS
         ts_irq = ts_irq or TS_IRQ
         M.ts_led = ts_led or TS_LED
+        M.ts_angle = ts_angle
         local bus = 1
         local tft_res = nil
         M.ts_callback = ts_callback
@@ -77,9 +80,17 @@ do
         M.disp = ucg.ili9341_18x240x320_hw_spi(bus, tft_cs, tft_dc, tft_res)
         M.disp:begin(ucg.FONT_MODE_TRANSPARENT)
         tft_ts.disp:setFont(ucg.font_ncenR12_tr)
+        if M.ts_angle == 90 then M.disp:setRotate90()
+        elseif M.ts_angle == 180 then M.disp:setRotate180()
+        elseif M.ts_angle == 270 then M.disp:setRotate270()
+        end
         M.disp:clearScreen()
         --INIT TS
-        xpt2046.init(ts_cs, ts_irq, M.disp:getHeight(), M.disp:getWidth()) -- height and width inverted
+        if M.ts_angle == 90 or M.ts_angle == 270 then 
+            xpt2046.init(ts_cs, ts_irq, M.disp:getWidth(), M.disp:getHeight())
+        else 
+            xpt2046.init(ts_cs, ts_irq, M.disp:getHeight(), M.disp:getWidth())
+        end
         gpio.mode(ts_irq,gpio.INT,gpio.PULLUP)
         -- INIT TS_LED
         gpio.mode(M.ts_led, gpio.OUTPUT)
@@ -95,7 +106,7 @@ do
         if  not calibration then
             M.disp:clearScreen()
             tft_ts.disp:drawString(40,160,0,"Calibration...")
-            local x0, y0, x1, y1 = 10, 10, 230, 310
+            local x0, y0, x1, y1 = 10, 10,M.disp:getWidth() - 10, M.disp:getHeight()-10
             local get_raw_cal = function(x,y)
                 M.disp:setColor(255,255,255)
                 M.disp:drawVLine(x,y-10,20)
@@ -104,8 +115,10 @@ do
                     tmr.delay(100)
                 end
                 M.disp:setColor(0,0,0)
-                M.disp:drawVLine(x,y-10,20)
-                M.disp:drawHLine(x-10,y,20)
+                M.disp:drawLine(x,y-10,x,y+10)
+                M.disp:drawLine(x-10,y,x+10,y)
+                --M.disp:drawVLine(x,y-10,20)
+                --M.disp:drawHLine(x-10,y,20)
                 M.disp:setColor(255,255,255)
                 tmr.delay(100)
                 local rx, ry = xpt2046.getRaw()
@@ -135,10 +148,10 @@ do
         M.screen_saver(300000)
         -- Touch down!
         gpio.trig(ts_irq, "down", function()
-                if gpio.read(M.ts_led)==gpio.LOW then
+                if gpio.read(M.ts_led)==gpio.LOW then -- if sreen saver ..
                   gpio.write(M.ts_led, gpio.HIGH)
                 else
-                  local x,y = xpt2046.getPosition()
+                  local x,y = M.getPosition()
                   if xpt2046.isTouched() then
                       -- Callback "on_touch"
                       if M.ts_callback then
@@ -157,6 +170,16 @@ do
             end)
     end
 
+    function M.getPosition()
+        local x,y = xpt2046.getPosition()
+        if M.ts_angle == 90 or M.ts_angle == 270 then 
+            return y,x
+        else 
+            return x,y
+        end
+        return 
+    end
+    
     function M.screen_saver(duration)
         M.timer:alarm(duration, tmr.ALARM_SINGLE, function()
               gpio.write(M.ts_led, gpio.LOW)
@@ -245,6 +268,7 @@ do
         M.add_button = nil
         M.add_label = nil
         M.set_default = nil
+        M.on_touch = nil
         M.free = nil
     end
 

@@ -23,7 +23,7 @@ do
 
     -- ECRAN
     tft_ts = require 'tft_24_ts'
-    tft_ts.init() -- default pins : cs=0, dc=8, cs=3, irq=1, led = 4
+    tft_ts.init(0,8,3,1,4,nil,90) -- default pins : cs=0, dc=8, cs=3, irq=1, led = 4
     tft_ts.init = nil --freememory
 
     -- THERMOMETRE
@@ -33,7 +33,7 @@ do
     -- Params WIFI
     ------------------
     App.net = {
-            ssid = "T-HOME",
+            ssid = {"WIFI_THOME1",'WIFI_THOME2',"WIFI_THOME3"},
             password = "plus33324333562",
             wifi_time_retry = 10, -- minutes
             }
@@ -46,8 +46,8 @@ do
         port = 1883,
         --user = "fredthx",
         --pass = "GaZoBu",
-        client_name = "NODE-TFT",
-        base_topic = "T-HOME/TFT/"
+        client_name = "NODE-SDB-ECRAN",
+        base_topic = "T-HOME/SDB/ECRAN/"
     }
 
     -- Messages MQTT sortants

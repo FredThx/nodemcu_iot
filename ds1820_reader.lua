@@ -54,11 +54,11 @@ do
                 ask_rom = {ask_rom}
             end
             ds18b20.read(function(ind,rom,res,temp,tdec,par)
-                    print_log(string.format(
+                    print(string.format(
                         "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
                         string.match(rom,"(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+)"))
                         .." => "..temp)
-					if temp < 85 then
+					if temp < 85 and callback then
 						callback(temp)
 					end
                 end,ask_rom)
