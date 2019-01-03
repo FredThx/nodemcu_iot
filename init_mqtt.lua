@@ -19,7 +19,7 @@ App.mqtt.client:on("offline", function(con)
         print_log('mqtt_disconnected_callback call...')
         pcall(App.mqtt.disconnected_callback)
     end
-    mqtt_connect()
+    App.mqtt_connect()
     end)
 
 -- on receive message
@@ -49,7 +49,7 @@ App.mqtt.client:on("connect", function(client)
 
 
 -- Connecte (ou reconnecte) le client mqtt
-function mqtt_connect()
+function App.mqtt_connect()
 	local mqtt_connect_alarm = tmr.create()
     mqtt_connect_alarm:alarm(1000, 1, function()
             if App.mqtt.connected then
@@ -74,5 +74,5 @@ function mqtt_connect()
 end
 
 -- 1st connexion
-mqtt_connect()
+App.mqtt_connect()
                 

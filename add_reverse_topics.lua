@@ -36,6 +36,7 @@ if App.mqtt_out_topics then
         -- Add deamons on_change
         if App.mqtt_out_topics[topic]["on_change"] then
             App.mqtt_out_topics[topic]["on_change_value"]=nil
+            if not App.mqtt_test_topics then App.mqtt_test_topics = {} end
             App.mqtt_test_topics[topic]={{
                     test = function()
                                 local no_err, value = pcall(App.mqtt_out_topics[topic].message)
@@ -53,7 +54,9 @@ if App.mqtt_out_topics then
                                     end
                             end,
                         mqtt_repeat = false,
-                        qos = 0, retain = 0, callback = nil}}
+                        qos = App.mqtt_out_topics[topic].qos or 0, 
+                        retain = App.mqtt_out_topics[topic].retain or 0,
+                        callback = App.mqtt_out_topics[topic].callback}}
             print_log("Test topic "..topic.."_".." created.")
          end
     end

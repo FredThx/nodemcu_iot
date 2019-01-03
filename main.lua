@@ -56,6 +56,8 @@ function App.mqtt_publish(rep,topic,action)
 					print_log("MQTT send : ok")
 				else
 					print_log("MQTT not send : mqtt error")
+                    App.mqtt.connected = false
+                    App.mqtt_connect()
 				end
 				collectgarbage()       
 			end
