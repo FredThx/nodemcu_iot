@@ -22,7 +22,7 @@ local App = {}
 
 do
     App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
-    App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
+    App.msg_debug = false -- if true : send messages (ex : "MQTT send : ok")
 
     -- Relais 
     pin_rel = 1
@@ -33,10 +33,10 @@ do
         node.restart()
     end
     seuil_luminosite = 50
-    
+
+    -- Initialisation
     gpio.mode(pin_rel, gpio.OUTPUT)
     gpio.write(pin_rel, gpio.LOW)
-
 
     ------------------
     -- Params WIFI 
@@ -74,6 +74,11 @@ do
                             return humi
                         end
                     end}
+    App.mqtt_out_topics[App.mqtt.base_topic.."luminosite"]={
+                message = function()
+                        return adc.read(0)
+                    end,
+                manual = true}
     -- actions sur test
     App.mqtt_out_topics[App.mqtt.base_topic.."lumiere"]={
                 message = function()
@@ -83,6 +88,7 @@ do
                             return "OFF"
                         end
                     end,
+                manual = true,
                 on_change = true}    
     -- Test luminosité
     App.test_period = 1000
