@@ -21,13 +21,13 @@ do
 	App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
 
 	-- Capteur DTH11-22
-	DHT_pin = 4
+	DHT_pin = 2
 
 	------------------
 	-- Params WIFI 
 	------------------
 	App.net = {
-			ssid = {"WIFI_THOME1",'WIFI_THOME2'},
+			ssid = {"WIFI_THOME1",'WIFI_THOME2','WIFI_THOME3'},
 			password = "plus33324333562",
 			wifi_time_retry = 10, -- minutes
 			}
@@ -47,14 +47,14 @@ do
 	-- Messages MQTT sortants
 	App.mesure_period = 10*60 * 1000
 	App.mqtt_out_topics = {}
-	App.mqtt_out_topics[mqtt_base_topic.."temperature"]={
+	App.mqtt_out_topics[App.mqtt.base_topic.."temperature"]={
 					message = function()
-							local status,temp,humi = dht.read(DTH_pin)
+							local status,temp,humi = dht.read(DHT_pin)
 							return temp
 						end}
-	App.mqtt_out_topics[mqtt_base_topic.."humidite"]={
+	App.mqtt_out_topics[App.mqtt.base_topic.."humidite"]={
 					message = function()
-							local status,temp,humi = dht.read(DTH_pin)
+							local status,temp,humi = dht.read(DHT_pin)
 							return humi
 						end}
 end
