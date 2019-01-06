@@ -26,11 +26,14 @@ do
     tft_ts.init(0,8,3,1,4,nil,90) -- default pins : cs=0, dc=8, cs=3, irq=1, led = 4
     tft_ts.init = nil --freememory
 
+    -- THERMOMETRE
+    thermometer = require 'ds1820_reader'
+    thermometer.init(2) -- pin D2
     ------------------
     -- Params WIFI
     ------------------
     App.net = {
-            ssid = {"WIFI_THOME1",'WIFI_THOME2'},
+            ssid = {"WIFI_THOME1",'WIFI_THOME2',"WIFI_THOME3"},
             password = "plus33324333562",
             wifi_time_retry = 10, -- minutes
             }
@@ -43,13 +46,19 @@ do
         port = 1883,
         --user = "fredthx",
         --pass = "GaZoBu",
-        client_name = "NODE-TFT",
-        base_topic = "T-HOME/TFT/"
+        client_name = "NODE-SDB-ECRAN",
+        base_topic = "T-HOME/SDB/ECRAN/"
     }
 
     -- Messages MQTT sortants
     App.mesure_period = 60 * 1000
     App.mqtt_out_topics = {}
+    App.mqtt_out_topics[App.mqtt.base_topic.."temperature"]={
+                message = function()
+                        thermometer.read(nil, function(temp)
+                                App.mqtt_publish(temp, App.mqtt.base_topic.."temperature")
+                            end)
+                    end}
 
     -- Actions sur messages MQTT entrants
     App.mqtt_in_topics = {}
