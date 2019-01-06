@@ -216,7 +216,9 @@ do
       M.disp:drawRBox(param.x,param.y,param.w,param.h,5)
       M.disp:setFont(param.font or ucg.font_helvB10_hr)
       M.disp:setColor(unpack(param.text_color or {255,255,255}))
-      M.disp:drawString(param.x+5,param.y+param.h-5,0,param.text)
+      local offset_x = (param.w - M.disp:getStrWidth(param.text))/2
+      local offset_y = (param.h + M.disp:getFontAscent())/2
+      M.disp:drawString(param.x+offset_x,param.y+offset_y,0,param.text)
       table.insert(M.buttons, param)
     end
 
