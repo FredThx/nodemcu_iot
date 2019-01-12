@@ -46,16 +46,21 @@ do
 
 	-- Messages MQTT sortants
 	App.mesure_period = 10*60 * 1000
+    App.mesure_interval = 1000
 	App.mqtt_out_topics = {}
 	App.mqtt_out_topics[App.mqtt.base_topic.."temperature"]={
 					message = function()
 							local status,temp,humi = dht.read(DHT_pin)
-							return temp
+							if status == 0 then
+							    return temp
+                             end
 						end}
 	App.mqtt_out_topics[App.mqtt.base_topic.."humidite"]={
 					message = function()
 							local status,temp,humi = dht.read(DHT_pin)
-							return humi
+							if status == 0 then
+							    return humi
+                            end
 						end}
 end
 return App
