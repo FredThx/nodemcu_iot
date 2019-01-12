@@ -32,8 +32,7 @@ do
     -- Relais
     pin_rel_1 = 5
     pin_rel_2 = 6
-    -- Detecteur de mouvement
---    pin_detect = 4
+
 
     gpio.mode(pin_rel_1, gpio.OUTPUT)
     gpio.mode(pin_rel_2, gpio.OUTPUT)
