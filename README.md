@@ -5,7 +5,6 @@ Usage :
 -------
 Modify the params.lua file.
 Copy all files in the nodemcu device.
-run compile.lua
 restart the device
 
 Examples :
