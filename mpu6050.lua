@@ -6,7 +6,9 @@
 --      int_detection : 0 to 255 (0 : always, 1 is good)
 --  mpu6050.init = nil -- to free memory
 --  mpu6050.read() return a table with all values
---
+-- Units for values : 
+-- Gyro : 1/131 degrés/secondes
+-- Acceleration : 1/16384 g (g=9.81 N.s-2)
 -- modules necessaires : i2c, bit
 
 local M
