@@ -49,8 +49,8 @@ do
         port = 1883,
         user = "fredthx",
         pass = "GaZoBu",
-        client_name = "NODE-SONOFF-0",
-        base_topic = "T-HOME/SONOFF/0/"
+        client_name = "NODE-SONOFF-4",
+        base_topic = "T-HOME/SONOFF/4/"
     }
 
     -- Messages MQTT sortants
@@ -58,7 +58,7 @@ do
     App.mqtt_out_topics = {}
     App.mqtt_out_topics[App.mqtt.base_topic.."ETAT"]={
                 message = function()
-                        if gpio.read(RELAIS_PIN)==gpio.HIGH then
+                        if gpio.read(RELAIS_PIN)==gpio.LOW then
                             return "ON"
                         else
                             return "OFF"
@@ -82,10 +82,10 @@ do
     App.mqtt_in_topics = {}
     App.mqtt_in_topics[App.mqtt.base_topic.."RELAIS"] = {
             ["ON"]=function()
-                        gpio.write(RELAIS_PIN, gpio.LOW)
+                        gpio.write(RELAIS_PIN, gpio.HIGH)
                     end,
             ["OFF"]=function()
-                        gpio.write(RELAIS_PIN, gpio.HIGH)
+                        gpio.write(RELAIS_PIN, gpio.LOW)
                     end}
     led_alarm = tmr.create()
     App.mqtt_in_topics[App.mqtt.base_topic.."LED"]={

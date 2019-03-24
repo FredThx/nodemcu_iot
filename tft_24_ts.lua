@@ -86,9 +86,9 @@ do
         end
         M.disp:clearScreen()
         --INIT TS
-        if M.ts_angle == 90 or M.ts_angle == 270 then 
+        if M.ts_angle == 90 or M.ts_angle == 270 then
             xpt2046.init(ts_cs, ts_irq, M.disp:getWidth(), M.disp:getHeight())
-        else 
+        else
             xpt2046.init(ts_cs, ts_irq, M.disp:getHeight(), M.disp:getWidth())
         end
         gpio.mode(ts_irq,gpio.INT,gpio.PULLUP)
@@ -145,12 +145,10 @@ do
         M.variables = {}
         -- Economiseur d'écran
         M.timer = tmr.create()
-        M.screen_saver(300000)
+        M.init_screen_saver(300000)
         -- Touch down!
         gpio.trig(ts_irq, "down", function()
-                if gpio.read(M.ts_led)==gpio.LOW then -- if sreen saver ..
-                  gpio.write(M.ts_led, gpio.HIGH)
-                else
+                if not M.init_screen_saver(300000) then
                   local x,y = M.getPosition()
                   if xpt2046.isTouched() then
                       -- Callback "on_touch"
@@ -165,26 +163,32 @@ do
                           end
                       end
                   end
-                end
-                M.screen_saver(300000)
+               end
             end)
+    end
+
+    function M.init_screen_saver(duration)
+      -- init the screen saver
+      -- if needed, Wake up the screen and return true
+      M.timer:alarm(duration, tmr.ALARM_SINGLE, function()
+            gpio.write(M.ts_led, gpio.LOW)
+        end)
+      if gpio.read(M.ts_led)==gpio.LOW then -- if sreen saver ..
+        gpio.write(M.ts_led, gpio.HIGH)
+        return true
+      end
     end
 
     function M.getPosition()
         local x,y = xpt2046.getPosition()
-        if M.ts_angle == 90 or M.ts_angle == 270 then 
+        if M.ts_angle == 90 or M.ts_angle == 270 then
             return y,x
-        else 
+        else
             return x,y
         end
-        return 
+        return
     end
-    
-    function M.screen_saver(duration)
-        M.timer:alarm(duration, tmr.ALARM_SINGLE, function()
-              gpio.write(M.ts_led, gpio.LOW)
-          end)
-    end
+
 
     function M.on_touch(ts_callback)
         M.ts_callback = ts_callback

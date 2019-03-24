@@ -1,6 +1,6 @@
 local nb
 do
-    progs={ "init_mqtt",
+    local progs={ "init_mqtt",
             "init_trig",
             "main",
             "params",
@@ -34,17 +34,25 @@ do
             "motor_l298b",
             "tft_24_ts",
             }
-    files = file.list()
+    local files = file.list()
+    file.open("COMPILE", "a")
     for k, prog in pairs(progs) do
         if files[prog..".lua"] then
             print(prog.."...")
-            file.remove(prog..".lc")
-            node.compile(prog..".lua")
-            file.remove(prog..".lua")
-            print("... done.")
-            nb = (nb or 0) +1
+            --file.remove(prog..".lc")
+            if pcall(node.compile,prog..".lua") then
+                file.writeline('{"'..prog..'":"OK"}')
+                print("... done.")
+                nb = (nb or 0) + 1
+                file.remove(prog..".lua")
+            else
+                print("Error")
+                file.writeline('{"'..prog..'":"ERROR"}')
+                file.remove(prog .. ".lua")
+            end
         end
     end
-    files = nil
+    file.flush()
+    file.close()
 end
 return nb

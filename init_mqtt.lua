@@ -68,6 +68,19 @@ function App.mqtt_connect()
 									pcall (App.mqtt.connected_callback)
 								end
                                 App.mqtt_publish("INIT",App.mqtt.base_topic.."HELLO")
+                                if file.open("COMPILE","r") then
+                                    print("Analyse COMPILE")
+                                    local txt
+                                    repeat
+                                        txt = file.readline()
+                                        print(txt)
+                                        if txt~=nil then
+                                            App.mqtt_publish(txt,App.mqtt.base_topic.."COMPILE")
+                                        end
+                                    until txt == nil
+                                    file.close()
+                                    file.remove('COMPILE')
+                                end
 							end)
             end
         end)
