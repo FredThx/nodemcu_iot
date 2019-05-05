@@ -1,27 +1,42 @@
 -- servomotor module
 --
 -- usage :
---  servo = dofile('servo.lua')
---  servo.init(1) 1=pin
---  servo.init = nil -- to free memory
---  servo.angle(angle) angle entre 0 et 156
---
-local M
-do
-    local PIN = 1
-    local init_servo = function(pin)
-            PIN = pin or PIN
-            pwm.setup(PIN,50,25)
-            pwm.start(PIN)
-        end
-    local set_angle = function(angle)
-            if angle >= 0 and angle <= 200 then
-                pwm.setduty(PIN, 25+angle*5/9)
-            end
-        end
-    M = {
-            init = init_servo,
-            angle = set_angle
-        }
+--  Servo = require('servo_')
+--  servo_1 = Servo(5) -- pin = 5
+--  servo_1:start()
+--  servo_1:set_angle(angle) angle entre 0 et 156
+--  servo_1:stop()
+-- memoty usage : 2408 octets
+
+local Servo = {}
+Servo.__index = Servo
+
+setmetatable(Servo, {
+  __call = function (cls, ...)
+    return cls.new(...)
+  end,
+})
+
+function Servo.new(pin)
+  print("Create new Servo with pin = " .. pin)
+  local self = setmetatable({}, Servo)
+  self.pin = pin
+  pwm.setup(pin,50,25)
+  return self
 end
-return M
+
+function Servo:start()
+    pwm.start(self.pin)
+end
+
+function Servo:stop()
+    pwm.stop(self.pin)
+end
+
+function Servo:set_angle(angle)
+    if angle >= 0 and angle <= 200 then
+        pwm.setduty(self.pin, 25+angle*5/9)
+    end
+end
+
+return Servo
