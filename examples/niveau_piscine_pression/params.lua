@@ -2,7 +2,7 @@
 --  Projet : des IOT a base de nodemcu (ESP8266)
 --           qui communiquent en MQTT
 -------------------------------------------------
---  Auteur : FredThx  
+--  Auteur : FredThx
 -------------------------------------------------
 --  Ce fichier : paramètres pour nodemcu
 --               avec
@@ -17,7 +17,7 @@
 local App = {}
 
 do
-    --App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
+    --App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes
     App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
 
     -- Convertisseur Analogique Nnumérique MCP3008
@@ -25,7 +25,7 @@ do
     can.init(1,7)
 
     ------------------
-    -- Params WIFI 
+    -- Params WIFI
     ------------------
     App.net = {
             ssid = {"WIFI_THOME1",'WIFI_THOME2'},
@@ -44,14 +44,14 @@ do
         client_name = "NODE-NIVEAU-PISCINE",
         base_topic = "T-HOME/PISCINE/"
     }
-    
+
     -- Messages MQTT sortants
     App.mesure_period = 60 * 1000
     App.mqtt_out_topics = {}
     App.mqtt_out_topics[App.mqtt.base_topic.."NIVEAU"]={
                     message = function()
                             local pression
-                            pression = can.read(0) / 1023 * 5 -- Vref = 5V
+                            pression = can.read(0) * 5 -- Vref = 5V
                             pression = pression / 25 * 10000 -- Gain ampli-op = 1000 & 25mV -> 10kpa
                             return math.floor(pression)
                             --return math.floor(pression * 0.09 + 17) -- en cm (10m = 10^5 Pa) & correrction
