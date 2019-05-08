@@ -6,7 +6,8 @@
 --  servo_1:start()
 --  servo_1:set_angle(angle) angle entre 0 et 156
 --  servo_1:stop()
--- memoty usage : 2408 octets
+-- memory usage : 2240 octets (if compiled)
+--                + 104 octets per instance
 
 local Servo = {}
 Servo.__index = Servo
