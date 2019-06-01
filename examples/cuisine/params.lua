@@ -2,7 +2,7 @@
 --  Projet : des IOT a base de nodemcu (ESP8266)
 --           qui communiquent en MQTT
 -------------------------------------------------
---  Auteur : FredThx  
+--  Auteur : FredThx
 -------------------------------------------------
 --  Ce fichier : paramètres pour nodemcu
 --               avec
@@ -19,41 +19,41 @@
 local App = {}
 
 do
-    
+
     App.msg_debug = true
     App.watchdog = {timeout = 30*60}
-    
+
     LED_PIN = 3
     BUZZER_PIN = 1
     BT_PIN = 7
     gpio.mode(LED_PIN, gpio.OUTPUT)
     gpio.write(LED_PIN, gpio.LOW)
     gpio.mode(BT_PIN, gpio.INPUT)
-    
+
     --------------------------------------
     -- PARAMETRES CAPTEURS - ACTIONEURS
     --------------------------------------
-    
+
     -- Capteur température DSx20
-    DS1820_PIN = 4 
+    DS1820_PIN = 4
     thermometres=_dofile("ds1820_reader")
     thermometres.init(DS1820_PIN)
-    
-    sensors = { 
+
+    sensors = {
         frigo = "28:FF:4A:90:51:14:00:FA",
         cuisine = "28:FF:32:E2:50:14:00:AD",
         congelateur = "28:FF:75:5C:A0:16:03:6F"
     }
-    
-   
+
+
     --------------------------------------
-    -- Params WIFI 
+    -- Params WIFI
     --------------------------------------
     App.net = {
             ssid = {"WIFI_THOME1",'WIFI_THOME2'},
             password = "plus33324333562",
             wifi_time_retry = 10, -- minutes
-            }    
+            }
     ----------------------------------------
     -- Params MQTT
     ----------------------------------------
@@ -69,6 +69,7 @@ do
     -- Messages MQTT sortants
     ----------------------------------------
     App.mesure_period = 10*60 * 1000
+    App.mesure_interval = 20000 -- 20 secondes entre chaque mesure
     App.mqtt_out_topics = {}
     App.mqtt_out_topics[App.mqtt.base_topic.."REFRIGERATEUR/temperature"]={
                     result_on_callback = function(callback)
@@ -88,7 +89,7 @@ do
     ----------------------------------------
     -- Messages sur trigger GPIO
     ----------------------------------------
-    App.mqtt_trig_topics = {}     
+    App.mqtt_trig_topics = {}
     App.mqtt_trig_topics[App.mqtt.base_topic.."BT"]={
                     pin = BT_PIN,
                     pullup = true,
@@ -100,7 +101,7 @@ do
                             -- TODO : régler problème de déclenchement intempestif quand relais activé via WIFI
                             return 1
                         end
-                    }    
+                    }
     ----------------------------------------
     -- Actions sur messages MQTT entrants
     ----------------------------------------

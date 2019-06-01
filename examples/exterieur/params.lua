@@ -33,9 +33,9 @@ do
   DS1820_PIN = 3
   thermometres=_dofile("ds1820_reader")
   thermometres.init(DS1820_PIN)
-  sensors = {
-      [string.char(40,255,213,74,1,21,4,230)] = "piscine"
-  }
+  --sensors = {
+  --    [string.char(28,70,04,94,1B,13,01,1A 40,255,213,74,1,21,4,230)] = "piscine"
+  --}
   -- Relay pompe
   POMPE_PIN = 2
   -- Capteur Niveau d'eau
@@ -105,7 +105,7 @@ do
                   manual = true}
   App.mqtt_out_topics["T-HOME/PISCINE/temperature"]={
                   result_on_callback = function(callback)
-                          thermometres.read(sensors["piscine"],callback)
+                          thermometres.read(nil,callback)
                       end,
                   --qos = 0, retain = 0, callback = nil,
                   manual = true}
