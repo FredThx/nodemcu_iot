@@ -24,7 +24,7 @@
 --  temps = dofile('ds1820_reader.lua') or .lc if compiled
 --  temps.init(pin)
 --  temps.read(roms, function(result) print("temp :",result) end)
---     ou roms : 
+--     ou roms :
 --              - nil : execute la function à chaque device
 --              - "XX:XX:XX:XX:XX:XX:XX:XX" : execute la function si capteur detecte
 --              - {"XX:XX:...XX,"YY:YY:...YY" ...} : execute la function si capteurs detectes
@@ -32,7 +32,7 @@
 --
 -------------------------------------------------
 -- Modules nécessaires dans le firmware :
---    
+--
 --    ds18b20
 -------------------------------------------------
 
@@ -58,16 +58,16 @@ do
                         "%02X:%02X:%02X:%02X:%02X:%02X:%02X:%02X",
                         string.match(rom,"(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+):(%d+)"))
                         .." => "..temp)
-					if temp < 85 and callback then
-						callback(temp)
-					end
+          					if temp < 85 and callback then
+          						callback(temp)
+          					end
                 end,ask_rom)
     end
-    
+
     M =  {
             read = read_DS18B20,
             init = ds18b20.setup,
             --pipe = {}
-        }    
+        }
 end
 return M
