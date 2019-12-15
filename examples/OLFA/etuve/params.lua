@@ -61,5 +61,12 @@ do
                                 return humi
                             end
                         end}
+
+    App.mqtt_out_topics[App.mqtt.base_topic.."RSSI"]={
+                    message = function()
+                            
+                            return wifi.sta.getrssi()
+                        end}
+    
 end
 return App
