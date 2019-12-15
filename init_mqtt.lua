@@ -57,7 +57,7 @@ function App.mqtt_connect()
                 mqtt_connect_alarm:stop()
             else
                 print_log("MQTT Connection...")
-                App.mqtt.client:connect(App.mqtt.host, App.mqtt.port, 0, function(conn)
+                App.mqtt.client:connect(App.mqtt.host, App.mqtt.port, false, function(conn)
 								App.mqtt.connected = true
 								for topic in pairs(App.mqtt_in_topics) do
 									App.mqtt.client:subscribe(topic,1)
