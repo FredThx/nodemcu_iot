@@ -52,8 +52,8 @@ do
     }
 
     -- Messages MQTT sortants
-    App.mesure_period = 60 * 1000
-    App.mqtt_out_topics = {}
+    --App.mesure_period = 60 * 1000
+    --App.mqtt_out_topics = {}
 --    App.mqtt_out_topics[App.mqtt.base_topic.."temperature"]={
 --                message = function()
 --                        thermometer.read(nil, function(temp)

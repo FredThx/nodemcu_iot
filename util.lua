@@ -8,7 +8,6 @@ function _dofile(prog)
         print("file "..prog.." doesn't existe!")
     end
 end
-        
 
 print_log = function(txt)
     if App==nil or App.msg_debug == nil or App.msg_debug then

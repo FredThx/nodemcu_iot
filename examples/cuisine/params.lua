@@ -36,7 +36,7 @@ do
 
     -- Capteur température DSx20
     DS1820_PIN = 4
-    thermometres=_dofile("ds1820_reader")
+    thermometres=require("ds1820_reader")
     thermometres.init(DS1820_PIN)
 
     sensors = {

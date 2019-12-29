@@ -3,7 +3,7 @@
 -- Client : App.mqtt.client
 --
 -- Functions :
---			- on("offline") : reconnecte serveur 
+--			- on("offline") : reconnecte serveur
 --			- on("message") : A la reception des mmessages : execution des App.mqtt_in_topics
 -------------------------------------------------------------------------------------------------
 
@@ -12,10 +12,10 @@ App.mqtt.client = mqtt.Client(App.mqtt.client_name, 120, App.mqtt.user, App.mqtt
 App.mqtt.client:lwt(App.mqtt.base_topic .. "_SYS", "LWT")
 
 -- Deamon quand perte serveur mqtt
-App.mqtt.client:on("offline", function(con) 
+App.mqtt.client:on("offline", function(con)
     print_log ("MQTT offline")
     App.mqtt.connected = false
-    if App.mqtt.disconnected_callback then 
+    if App.mqtt.disconnected_callback then
         print_log('mqtt_disconnected_callback call...')
         pcall(App.mqtt.disconnected_callback)
     end
@@ -57,7 +57,7 @@ function App.mqtt_connect()
                 mqtt_connect_alarm:stop()
             else
                 print_log("MQTT Connection...")
-                App.mqtt.client:connect(App.mqtt.host, App.mqtt.port, false, function(conn)
+                App.mqtt.client:connect(App.mqtt.host, App.mqtt.port, 0, function(conn)
 								App.mqtt.connected = true
 								for topic in pairs(App.mqtt_in_topics) do
 									App.mqtt.client:subscribe(topic,1)
@@ -88,4 +88,3 @@ end
 
 -- 1st connexion
 App.mqtt_connect()
-                

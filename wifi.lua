@@ -39,8 +39,6 @@ end
 
 if (type(App.net.ssid)=='string') then App.net.ssid = {App.net.ssid} end
 
---wifi.sta.setmac("5c:cf:7f:EF:7A:C0")
-
 WIFI_INDEX = 1
 wait_for_wifi_conn()
 tmr.create():alarm(App.net.wifi_time_retry*60000,1,function()
