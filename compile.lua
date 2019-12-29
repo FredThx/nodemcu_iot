@@ -47,7 +47,7 @@ do
                 file.remove(prog..".lua")
             else
                 file.remove(prog..".lua")
-                file.remove(prog..".lc.checksum")
+                file.remove(prog..".lc.chk")
                 print("Error")
                 file.writeline('{"'..prog..'":"ERROR"}')
             end
