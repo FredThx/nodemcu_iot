@@ -18,7 +18,7 @@ local App = {}
 
 do
     App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
-    App.msg_debug = false -- if true : send messages (ex : "MQTT send : ok")
+    App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
 
 
     -- Detecteur de mouvement
@@ -28,7 +28,7 @@ do
     -- Params WIFI 
     ------------------
     App.net = {
-            ssid = {"WIFI_THOME1",'WIFI_THOME2',"WIFI_THOME3"},
+            ssid = {"WIFI_THOME1",'WIFI_THOME2'},
             password = "plus33324333562",
             wifi_time_retry = 10, -- minutes
             }
