@@ -2,7 +2,7 @@
 --  Projet : des IOT a base de nodemcu (ESP8266)
 --           qui communiquent en MQTT
 -------------------------------------------------
---  Auteur : FredThx  
+--  Auteur : FredThx
 -------------------------------------------------
 --  Ce fichier : paramètres pour nodemcu
 --               avec
@@ -21,7 +21,7 @@
 local App = {}
 
 do
-    App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
+    App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes
     App.msg_debug = false -- if true : send messages (ex : "MQTT send : ok")
 
     -- ruban de leds
@@ -33,29 +33,29 @@ do
     Leds.on = true
     -- Fonctions pour gestion LEDS
     Leds.write_buffers = function()
-		--local now = tmr.now()
-		if Leds.on then
-			local buffer = ws2812.newBuffer(Leds.nb,3)
-			local p={}
-			for buf_name,buf in pairs(Leds.buffers) do
-				table.insert(p,Leds.luminosite[buf_name])
-				table.insert(p,buf)
-			end
-			buffer:mix(unpack(p))        
-            -- inverse les colonnes paires (ce qui a été gagné en cablage est pardu en efficacité ici!) : 160ms pour la fonction
-			local buf_str=buffer:dump()
-            for i=0,Leds.nb/7-1 do
-                local colonne = ""
-                if i%2==1 then
-                    for pixel in string.gmatch(buf_str:sub(i*7*3+1,(i*7+7)*3),"...") do
-                        colonne = pixel .. colonne
+    		--local now = tmr.now()
+    		if Leds.on then
+    			local buffer = ws2812.newBuffer(Leds.nb,3)
+    			local p={}
+    			for buf_name,buf in pairs(Leds.buffers) do
+    				table.insert(p,Leds.luminosite[buf_name])
+    				table.insert(p,buf)
+    			end
+    			buffer:mix(unpack(p))
+          -- inverse les colonnes paires (ce qui a été gagné en cablage est pardu en efficacité ici!) : 160ms pour la fonction
+    			local buf_str=buffer:dump()
+                for i=0,Leds.nb/7-1 do
+                    local colonne = ""
+                    if i%2==1 then
+                        for pixel in string.gmatch(buf_str:sub(i*7*3+1,(i*7+7)*3),"...") do
+                            colonne = pixel .. colonne
+                        end
+    					buffer:replace(colonne,i*7+1)
                     end
-					buffer:replace(colonne,i*7+1)
                 end
-            end
-			ws2812.write(buffer)
+    			ws2812.write(buffer)
         end
-		--print(tmr.now()-now)
+    		--print(tmr.now()-now)
     end
 
     Leds.select_buffer = function(buffer_name)
@@ -72,17 +72,9 @@ do
     Leds.write_buffers()
     --Bouton
     pin_bt = 5
-    gpio.mode(pin_bt,gpio.INT)
-    gpio.trig(pin_bt, "up", function(level)
-            if Leds.on then
-                App.mqtt_in_topics[App.mqtt.base_topic.."LEDS"]["OFF"]()
-            else
-                App.mqtt_in_topics[App.mqtt.base_topic.."LEDS"]["ON"]()
-            end
-        end)
-    
+
         ------------------
-    -- Params WIFI 
+    -- Params WIFI
     ------------------
     App.net = {
             ssid = {"WIFI_THOME1",'WIFI_THOME2'},
@@ -101,26 +93,35 @@ do
         client_name = "NODE-HORLOGE-LEDS",
         base_topic = "T-HOME/HORLOGE-LEDS/"
     }
-    
+
     -- Messages MQTT sortants
     App.mesure_period = 60 * 1000
     App.mqtt_out_topics = {}
-    
+
     ----------------------------------------
     -- Messages sur trigger GPIO
     ----------------------------------------
     App.mqtt_trig_topics = {}
-    
+    App.mqtt_trig_topics[App.mqtt.base_topic.."BT"]={
+                    pin = pin_bt,
+                    pullup = true,
+                    type = "up",
+                    message = function(level, when, eventcount)
+                            return {level,when, eventcount}
+                        end
+                    }
+    ---------------------
+
     ----------------------------------------
     -- Actions sur messages MQTT entrants
     ----------------------------------------
     App.mqtt_in_topics = {}
-    
+
     App.mqtt_in_topics[App.mqtt.base_topic.."LEDS"] = {
                 ["OFF"]=function()
                             Leds.on = false
 							local buffer = ws2812.newBuffer(Leds.nb,3)
-							ws2812.write(buffer)   
+							ws2812.write(buffer)
                         end,
                 ["ON"]=function()
                             Leds.on = true
@@ -133,7 +134,7 @@ do
                             Leds.write_buffers()
                         end
                         }
-    
+
     App.mqtt_in_topics[App.mqtt.base_topic.."LUMINOSITE"]= function(data)
                 -- globale : msg.payload = "200"
 				-- par buffer : msg.payload = "{"horloge":100}"
@@ -154,7 +155,7 @@ do
 				end
 				Leds.write_buffers()
             end
-    
+
     App.mqtt_in_topics[App.mqtt.base_topic.."SHIFT"]= function(data)
                 -- Shift all the leds
                 -- ex : msg.payload = "1" (or -2)
@@ -172,7 +173,7 @@ do
                 end
                 Leds.write_buffers()
             end
-	
+
     App.mqtt_in_topics[App.mqtt.base_topic.."SET"]= function(data)
                 -- Set a led
                 -- ex : msg.payload = "{"index":5,"color":[0,255,0],"buffer":"horloge"}"
@@ -194,7 +195,7 @@ do
                 end
                 Leds.write_buffers()
             end
-	
+
     App.mqtt_in_topics[App.mqtt.base_topic.."FILL"]= function(data)
                 -- Fill all the leds
                 -- ex : msg.payload = "[0,0,10]" ou msg.payload = "{buffer:"jeux",color:"[0,255,0]}"
@@ -211,7 +212,7 @@ do
             end
 
     App.mqtt_in_topics[App.mqtt.base_topic.."WRITE_BUFFER"]= function(data)
-                -- Write leds 
+                -- Write leds
                 -- ex : msg.payload = "{"offset":5,"source":[1,0,0,1,0,0,1],"color":[255,255,0],"fond":[50,50,50],"buffer":"horloge"}"
                 local isjson, datas = pcall(sjson.decode, data)
                 if isjson then
@@ -233,7 +234,7 @@ do
                 end
                 Leds.write_buffers()
             end
-	
+
       App.mqtt_in_topics[App.mqtt.base_topic.."EFFECT"]= function(data)
                 -- Execute a effect (WS2812 effects Module)
                 -- ex : msg.payload = "{"mode":"blink", "speed":100, "brightness":50, "color:[0,255,0], "buffer":"fond"}"

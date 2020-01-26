@@ -63,6 +63,14 @@ do
                                 App.mqtt_publish(temp, App.mqtt.base_topic.."EAU")
                             end)
                     end}
+    App.mqtt_out_topics[App.mqtt.base_topic.."RELAIS"]={
+                message = function()
+                        if gpio.read(RELAIS_PIN)==gpio.HIGH then
+                          return "ON"
+                        else
+                          return "OFF"
+                        end
+                    end}
     -- Messages sur trigger GPIO
 
     App.mqtt_trig_topics = {}
