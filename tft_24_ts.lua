@@ -157,7 +157,7 @@ do
                           pcall(M.ts_callback, x,y)
                       end
                       -- Buttons
-                      for i, button in ipairs(M.buttons) do
+                      for i, button in pairs(M.buttons) do
                           if x > button.x and x < (button.x + button.w)
                                   and y > button.y and y < (button.y + button.h) then
                               pcall(button.callback)
@@ -196,7 +196,7 @@ do
     end
 
     function M.set_default(t,t_def)
-        for key, val in pairs(t_def) do
+        for key, val in pairs(t_def or {}) do
           if not t[key] then
             t[key] = val
           end
@@ -216,7 +216,8 @@ do
       --        text_color{r,g,b}
       --        text = text, font = ucg.font_..,
       --        callback = function(x,y) ... end}
-      M.set_default(param, {x=0,y=0,h=20,w=200})
+      M.set_default(param,M.buttons[param.id])
+      M.set_default(param, {x=0,y=0,h=20,w=200, id=#M.buttons+1}) -- pour compatibilité avec version sans id
       M.disp:setColor(unpack(param.color or {0,0,255}))
       M.disp:drawRBox(param.x,param.y,param.w,param.h,5)
       M.disp:setFont(param.font or ucg.font_helvB10_hr)
@@ -224,7 +225,7 @@ do
       local offset_x = (param.w - M.disp:getStrWidth(param.text))/2
       local offset_y = (param.h + M.disp:getFontAscent())/2
       M.disp:drawString(param.x+offset_x,param.y+offset_y,0,param.text)
-      table.insert(M.buttons, param)
+      M.buttons[param.id] = param
     end
 
     function M.add_label(param)

@@ -2,7 +2,7 @@
 --  Projet : des IOT a base de nodemcu (ESP8266)
 --           qui communiquent en MQTT
 -------------------------------------------------
---  Auteur : FredThx  
+--  Auteur : FredThx
 -------------------------------------------------
 --  Ce fichier : paramètres pour nodemcu
 --               avec
@@ -19,31 +19,24 @@
 -------------------------------------------------
 local App = {}
 do
-    
-    App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
+
+    App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes
     App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
 
-    -- Capteur température DSx20
-    --DS1820_PIN = 4 
-    --sensors = { }
-    
-    -- Capteur DTH11-22
-    --DTH_pin = 4
-    
     -- Capteur BMP180
     BMP_SDA_PIN = 1
     BMP_SCL_PIN = 2
-    
+
     -- prises Radio frequence 433Mhz
     PIN_433 = 3
     groupePrises = "00010"
     priseA = "10000"
-    
+
     -- display en i2c
-    pin_sda = 5 
-    pin_scl = 6 
+    pin_sda = 5
+    pin_scl = 6
     disp_sla = 0x3c
-    
+
     -- AUTREs
     IRD_PIN = 4
     GREEN_LED_PIN = 7
@@ -52,21 +45,23 @@ do
     ------------------------------
     -- Modules a charger
     ------------------------------
+    -- TODO : ne plus utiliser cette technique!!!
+    
     App.modules={ --"ds1820_reader.lua","DTH_reader.lua",
         "BMP_reader",
         "433_switch",
         "i2c_display"
         }
-    
+
     ------------------
-    -- Params WIFI 
+    -- Params WIFI
     ------------------
     App.net = {
             ssid = {"WIFI_THOME1",'WIFI_THOME2',"WIFI_THOME3"},
             password = "plus33324333562",
             wifi_time_retry = 10, -- minutes
             }
-    
+
     --------------------
     -- Params MQTT
     --------------------
@@ -78,8 +73,8 @@ do
         client_name = "NODE-SALON",
         base_topic = "T-HOME/SALON/"
     }
-    
-    
+
+
     -- Messages MQTT sortants
     App.mesure_period = 10*60 * 1000
     App.mqtt_out_topics = {}
@@ -93,18 +88,18 @@ do
                             return readBMP_pressure()
                         end,
                     qos = 0, retain = 0, callback = nil}
-    App.mqtt_out_topics[App.mqtt.base_topic.."luminosite"]={             
+    App.mqtt_out_topics[App.mqtt.base_topic.."luminosite"]={
                     message = function()
                             return adc.read(0)
                         end,
-                    qos = 0, retain = 0, callback = nil}   
+                    qos = 0, retain = 0, callback = nil}
     -- Messages sur trigger GPIO
     App.mqtt_trig_topics = {}
     App.mqtt_trig_topics[App.mqtt.base_topic.."CAPTEUR_IR"]={
                     pin = IRD_PIN,
                     type = "up",
                     qos = 0, retain = 0, callback = nil}
-                    
+
     -- Actions sur messages MQTT entrants
     App.mqtt_in_topics = {}
     App.mqtt_in_topics[App.mqtt.base_topic.."433"]=function(data)
@@ -127,11 +122,11 @@ do
     -- Messages MQTT sortants sur test
     App.test_period = 1000
     App.mqtt_test_topics = {}
-    
+
     --Gestion du display : mqtt(json)=>affichage
     disp_texts = {}
     App.mqtt_in_topics[App.mqtt.base_topic.."DISPLAY"]=function(data)
                     disp_add_data(data)
                 end
 end
-return App    
+return App
