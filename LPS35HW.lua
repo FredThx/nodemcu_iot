@@ -1,6 +1,6 @@
 -- LPS35HW (ST water resistant pressure sensor)
 --      in i2c mode
--- 
+--
 -- usage:
 --  sensor = require('LPS35HW')
 --  sensor.init(sda_pin, scl_pin, [addr = 0x5D], [i2c_id=0])
@@ -43,7 +43,7 @@ do
 
     end
 
-    -- user defined function: read 1 byte of data from device
+    -- user defined function: read n byte of data from device
     function read_reg(reg_addr, n)
         n = n or 1
         i2c.start(ID)
