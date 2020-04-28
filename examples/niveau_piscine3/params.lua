@@ -21,8 +21,11 @@ do
 
     -- Convertisseur Analogique Nnumérique MCP3008
     sensor = require 'LPS35HW'
-    sensor.init(1,2)
-
+    --gpio.mode(5, gpio.OUTPUT) -- CS
+    --gpio.write(5,gpio.HIGH) -- CS : select i2C
+    --gpio.mode(3, gpio.OUTPUT) -- SDO
+    --gpio.write(3,gpio.HIGH) -- SA0 : select 0x5D as addr
+    sensor.init(1,2) -- SDA, SCL
     ------------------
     -- Params WIFI
     ------------------
@@ -41,11 +44,11 @@ do
         user = "fredthx",
         pass = "GaZoBu",
         client_name = "NODE-NIVEAU-PISCINE",
-        base_topic = "T-HOME/PISCINE/"
+        base_topic = "T-HOME/PISCINE/FOND/"
     }
 
     -- Messages MQTT sortants
-    App.mesure_period = 60 * 1000
+    App.mesure_period = 10*60*1000
     App.mqtt_out_topics = {}
     App.mqtt_out_topics[App.mqtt.base_topic.."PRESSION"]={
                     message = function()

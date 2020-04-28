@@ -1,5 +1,14 @@
 -- LPS35HW (ST water resistant pressure sensor)
 --      in i2c mode
+-- Wiring :
+--      LPS35HW     ESP32
+--      Vin         3.3V
+--      0V          0V
+--      2-SCK       scl_pin (D2 for ex)
+--      4-SDI       sda_pin (D1 for ex)
+--      5-SD0       3.3V (to set i2c address)
+--      6-CS        3.3V (i2c enable)
+--      
 --
 -- usage:
 --  sensor = require('LPS35HW')
@@ -14,12 +23,12 @@
 
 local M
 do
-    -- Default values
+    -- Default values :
     local ID = 0
     local SDA
     local SCL
     local ADDR = 0x5D
-    -- Constantes
+    -- Constantes :
     -- local PRESS_OUT_H = 0x2A
     -- local PRESS_OUT_L = 0x29
     local PRESS_OUT_XL = 0x28
@@ -70,13 +79,17 @@ do
         write_reg(CTRL_REG2, 0x11)
         local press_xl, press_l, press_h  = string.byte(read_reg(PRESS_OUT_XL,3),1,3)
         local pressure_lbs = press_h * 256 * 256 + press_l * 256 + press_xl
-        return pressure_lbs / 4096
+        if pressure_lbs <  16777215 then
+            return pressure_lbs / 4096
+        end
     end
 
     function read_temperature()
         write_reg(CTRL_REG2, 0x11)
         local temp_l, temp_h =  string.byte(read_reg(TEMP_OUT_L,2),1,2)
-        return (temp_h * 256 + temp_l) / 100
+        if temp_h < 255 then 
+            return (temp_h * 256 + temp_l) / 100
+        end
     end
 
     M =  {
