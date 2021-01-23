@@ -25,7 +25,7 @@ do
     --gpio.write(5,gpio.HIGH) -- CS : select i2C
     --gpio.mode(3, gpio.OUTPUT) -- SDO
     --gpio.write(3,gpio.HIGH) -- SA0 : select 0x5D as addr
-    sensor.init(1,2) -- SDA, SCL
+    sensor.init(1,3) -- SDA, SCL
     ------------------
     -- Params WIFI
     ------------------

@@ -39,3 +39,4 @@ http://ouiaremakers.com/mes-refrigerateur-congelateur-en-mode-connecte/
 - stepper
 - tft_24
 - vl6180
+- D6F-V (OMRON air flow sensor)

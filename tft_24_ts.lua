@@ -255,7 +255,7 @@ do
         if param.back_color then -- FONT_MODE_SOLID don't work with all fonts!
             M.disp:setColor(unpack(param.back_color))
             M.disp:drawBox(param.x  ,
-                          param.y - 1 - M.disp:getFontAscent(),
+                          param.y  - M.disp:getFontAscent(),
                          param.size or M.disp:getStrWidth(param.text or " "),
                           M.disp:getFontAscent() - M.disp:getFontDescent(),5)
         end

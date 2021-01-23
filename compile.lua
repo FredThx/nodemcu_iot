@@ -33,6 +33,7 @@ do
             "flowmeter",
             "motor_l298b",
             "tft_24_ts",
+            "DF6_V",
             }
     local files = file.list()
     file.open("COMPILE", "a")
