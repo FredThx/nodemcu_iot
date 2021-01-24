@@ -104,7 +104,18 @@ function on_wifi_connected()
     if TELNET then
         _dofile("telnet")
     end
-    _dofile("init_mqtt")
+    if App.mqtt.host then
+        _dofile("init_mqtt")
+    else
+        print_log("Mqtt host not configured. Scan in progress...")
+        mqtt_scanner = require("mqtt_scanner")
+        mqtt_scanner.scan(App.mqtt.port,function(host)
+                App.mqtt.host = host
+                _dofile("init_mqtt")
+            end)
+       package.loaded.package.loaded["mqtt_scanner"]=nil
+       mqtt_scanner = nil
+    end
 end
 
 _dofile("wifi")

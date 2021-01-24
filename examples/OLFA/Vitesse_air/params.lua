@@ -37,8 +37,8 @@ do
     -- Params MQTT
     --------------------
     App.mqtt = {
-        --host = "192.168.0.11",
-        host = "192.168.10.155",
+        host = "192.168.0.11",
+        --host = "192.168.10.155",
         port = 1883,
         --user = "fredthx",
         --pass = "GaZoBu",

@@ -34,6 +34,7 @@ do
             "motor_l298b",
             "tft_24_ts",
             "DF6_V",
+            "mqtt_scanner",
             }
     local files = file.list()
     file.open("COMPILE", "a")
