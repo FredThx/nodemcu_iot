@@ -51,37 +51,47 @@ App.mqtt.client:on("connect", function(client)
 -- Connecte (ou reconnecte) le client mqtt
 function App.mqtt_connect()
 	local mqtt_connect_alarm = tmr.create()
+    local on_connection = false
     mqtt_connect_alarm:alarm(1000, 1, function()
             if App.mqtt.connected then
                 print_log("MQTT Connected.")
                 mqtt_connect_alarm:stop()
             else
                 print_log("MQTT Connection...")
-                App.mqtt.client:connect(App.mqtt.host, App.mqtt.port, 0, function(conn)
-								App.mqtt.connected = true
-								for topic in pairs(App.mqtt_in_topics) do
-									App.mqtt.client:subscribe(topic,1)
-									print_log(topic .." : subscribed")
-								end
-								if App.mqtt.connected_callback then
-									print_log('mqtt_connected_callback call...')
-									pcall (App.mqtt.connected_callback)
-								end
-                                App.mqtt_publish("INIT",App.mqtt.base_topic.."HELLO")
-                                if file.open("COMPILE","r") then
-                                    print("Analyse COMPILE")
-                                    local txt
-                                    repeat
-                                        txt = file.readline()
-                                        print(txt)
-                                        if txt~=nil then
-                                            App.mqtt_publish(txt,App.mqtt.base_topic.."COMPILE")
-                                        end
-                                    until txt == nil
-                                    file.close()
-                                    file.remove('COMPILE')
-                                end
-							end)
+                if not on_connection then
+                    on_connection = true
+                    App.mqtt.client:connect(App.mqtt.host, App.mqtt.port, false,
+                        function(conn)
+    						App.mqtt.connected = true
+    						for topic in pairs(App.mqtt_in_topics) do
+    							App.mqtt.client:subscribe(topic,1)
+    							print_log(topic .." : subscribed")
+    						end
+    						if App.mqtt.connected_callback then
+    							print_log('mqtt_connected_callback call...')
+    							pcall (App.mqtt.connected_callback)
+    						end
+                            App.mqtt_publish("INIT",App.mqtt.base_topic.."HELLO")
+                            if file.open("COMPILE","r") then
+                                print("Analyse COMPILE")
+                                local txt
+                                repeat
+                                    txt = file.readline()
+                                    print(txt)
+                                    if txt~=nil then
+                                        App.mqtt_publish(txt,App.mqtt.base_topic.."COMPILE")
+                                    end
+                                until txt == nil
+                                file.close()
+                                file.remove('COMPILE')
+                            end
+                            on_connection = false
+    					end,
+    					function(conn, reason)
+                            print("Error en mqtt connection : ".. reason)
+                            on_connection = false
+    					end)
+                end
             end
         end)
 end

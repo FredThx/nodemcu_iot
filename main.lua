@@ -62,8 +62,8 @@ end
 function App.mqtt_publish(rep,topic,action)
             if not action then action = {} end
             if type(rep)=="table" then rep = sjson.encode(rep) end
-			print_log("publish ".. topic.. "=>" ..rep)
 			if App.mqtt.connected then
+                print_log("publish ".. topic.. "=>" ..rep)
 				if App.mqtt.client:publish(topic,rep,
 									action.qos or 0,
 									action.retain or 0,
@@ -72,6 +72,7 @@ function App.mqtt_publish(rep,topic,action)
 				else
 					print_log("MQTT not send : mqtt error")
                     App.mqtt.connected = false
+                    App.mqtt.client:close()
                     App.mqtt_connect()
 				end
 				collectgarbage()

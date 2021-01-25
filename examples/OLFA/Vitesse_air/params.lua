@@ -28,8 +28,8 @@ do
     -- Params WIFI
     ------------------
     App.net = {
-            ssid = {"OLFA_PRODUCTION", "WIFI_THOME2"},
-            password = {"79073028", "plus33324333562"},
+            ssid = {"OLFA_PRODUCTION", "OLFA_WIFI", "WIFI_THOME2"},
+            password = {"79073028","Olfa08SignyLePetit", "plus33324333562"},
             wifi_time_retry = 10, -- minutes
             }
 
@@ -37,8 +37,8 @@ do
     -- Params MQTT
     --------------------
     App.mqtt = {
-        --host = "192.168.0.11",
-        host = "192.168.10.155",
+        host = "192.168.0.11",
+        --host = "192.168.10.155",
         port = 1883,
         --user = "fredthx",
         --pass = "GaZoBu",
@@ -47,7 +47,7 @@ do
     }
 
     -- Messages MQTT sortants
-    App.mesure_period = 1 * 1000
+    App.mesure_period = 1000
     App.mqtt_out_topics = {}
     App.mqtt_out_topics[App.mqtt.base_topic.."flow"]={
                 message = function()
