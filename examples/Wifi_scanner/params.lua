@@ -2,34 +2,32 @@
 --  Projet : des IOT a base de nodemcu (ESP8266)
 --           qui communiquent en MQTT
 -------------------------------------------------
---  Auteur : FredThx
+--  Auteur : FredThx  
 -------------------------------------------------
---  Ce fichier : paramètres pour capteur de vitesse d'air
+--  Ce fichier : paramètres pour detection présence
 --               avec
---              - 1 OMRON DF6_V
+--              - 1 detecteur IR type SEN0018
 --
 -------------------------------------------------
---  Wiring : voir DF6_V.lua
 -------------------------------------------------
 -- Modules nécessaires dans le firmware :
 --    file, gpio, net, node,tmr, uart, wifi
---    mqtt, adc
+--    mqtt
 -------------------------------------------------
 local App = {}
 
 do
-    App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes
+    App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
     App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
 
-    -- Capteur
-    sensor = require("DF6_V")
 
+   
     ------------------
-    -- Params WIFI
+    -- Params WIFI 
     ------------------
     App.net = {
-            ssid = {"OLFA_PRODUCTION", "OLFA_WIFI", "WIFI_THOME"},
-            password = {"79073028","Olfa08SignyLePetit", "plus33324333562"},
+            ssid = {'WIFI_THOME2'},
+            password = "plus33324333562",
             wifi_time_retry = 10, -- minutes
             }
 
@@ -37,24 +35,24 @@ do
     -- Params MQTT
     --------------------
     App.mqtt = {
-        host = nil,--"192.168.0.11",
-        --host = "192.168.10.155",
+        host = "192.168.10.155",
         port = 1883,
-        --user = "fredthx",
-        --pass = "GaZoBu",
-        client_name = "CAB1-FLOW",
-        base_topic = "OLFA/PEINTURE/CAB1_FLOW/"
+        user = "fredthx",
+        pass = "GaZoBu",
+        client_name = "NODE-WIFI_SCANNER",
+        base_topic = "T-HOME/WIFI_SCANNER/"
     }
-
+    
     -- Messages MQTT sortants
-    App.mesure_period = 1000
+    --App.mesure_period = 60 * 1000
     App.mqtt_out_topics = {}
-    App.mqtt_out_topics[App.mqtt.base_topic.."flow"]={
+    App.mqtt_out_topics[App.mqtt.base_topic.."SCAN"]={
                 message = function()
-                        return sensor.read()
+                        wifi.sta.getap(1, function(t)
+                                App.mqtt_publish(t, App.mqtt.base_topic.."SCAN")
+                            end)
                     end}
-    -- Actions sur messages MQTT entrants
-    App.mqtt_in_topics = {}
-
+    -- Messages sur trigger GPIO
+    App.mqtt_trig_topics = {}
 end
 return App
