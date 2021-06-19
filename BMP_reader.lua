@@ -1,5 +1,6 @@
+--Obsolete : ne plus utiliser
 function readBMP_temperature()
-    bmp085.init(BMP_SDA_PIN, BMP_SCL_PIN)
+    bmp085.setup(0,BMP_SDA_PIN, BMP_SCL_PIN)
     local t = bmp085.temperature()
     print(string.format("Temperature: %s degrees C", t / 10))
     return t/10

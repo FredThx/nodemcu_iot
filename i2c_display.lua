@@ -2,16 +2,16 @@
 --  Projet : des IOT a base de nodemcu (ESP8266)
 --           qui communiquent en MQTT
 -------------------------------------------------
---  Auteur : FredThx  
+--  Auteur : FredThx
 -------------------------------------------------
---  Ce fichier : 
+--  Ce fichier :
 --				Initialisation de l ecran (en i2c)
 --				mise en place du deamon de rafraichissement (alarm)
 --
 -------------------------------------------------
 --  Utilisation :
---              pin_sda = 5 
---              pin_scl = 6 
+--              pin_sda = 5
+--              pin_scl = 6
 --              disp_sla = 0x3c
 --              _dofile("i2c_display")
 --              disp_add_data(texte)
@@ -25,25 +25,24 @@
 --          disp_add_data('{"id":"id_du_texte"}') efface le texte
 -------------------------------------------------
 -- Modules nécessaires dans le firmware :
---    i2c, u8g(avec font ssd1306_128x64_i2c), cjson
+--    i2c, u8g2(avec font ssd1306_i2c_128x64_noname), sjson
 -------------------------------------------------
 
-i2c.setup(0, pin_sda, pin_scl, i2c.SLOW)
-disp = u8g.ssd1306_128x64_i2c(disp_sla)
 
-disp:setFont(u8g.font_6x10)
+i2c.setup(0, pin_sda, pin_scl, i2c.SLOW)
+--Modif pour compatibilité u8g2 vs u8g (obsolete)
+disp = u8g2.ssd1306_i2c_128x64_noname(0,disp_sla)
+disp:setFont(u8g2.font_6x10_tf)
+
 disp:setFontRefHeightExtendedText()
-disp:setDefaultForegroundColor()
 disp:setFontPosTop()
 
 -- rafaichissement du display
 function update_display()
-    i2c.setup(0, pin_sda, pin_scl, i2c.SLOW) -- pour pas que ça déconne??
-    disp:firstPage()
-    repeat
-        draw_background()
-        draw_texts()
-    until disp:nextPage() == false
+    disp:clearBuffer()
+    draw_background()
+    draw_texts()
+    disp:updateDisplay()
     x_pos = x_pos + 3
     if x_pos > 125 then x_pos = 6 end
 end
@@ -76,6 +75,6 @@ end
 tmr.create():alarm(1000, tmr.ALARM_AUTO, update_display)
 
 function disp_add_data(data)
-    local t_data=cjson.decode(data)
+    local t_data=sjson.decode(data)
     disp_texts[t_data["id"] ]=t_data
-end            
+end

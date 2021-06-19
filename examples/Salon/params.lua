@@ -15,7 +15,7 @@
 -------------------------------------------------
 -- Modules nécessaires dans le firmware :
 --    file, gpio, net, node,tmr, uart, wifi
---    bit, mqtt, i2c, u8g(avec font ssd1306_128x64_i2c), cjson, adc, bmp085
+--    bit, mqtt, i2c, u8g(avec font ssd1306_128x64_i2c), sjson, adc, bmp085
 -------------------------------------------------
 local App = {}
 do
@@ -23,19 +23,20 @@ do
     App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes
     App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
 
-    -- Capteur BMP180
-    BMP_SDA_PIN = 1
-    BMP_SCL_PIN = 2
-
+    
+    
+    
     -- prises Radio frequence 433Mhz
     PIN_433 = 3
     groupePrises = "00010"
     priseA = "10000"
 
-    -- display en i2c
+    --Port i2c : capteur BMP180 & display
     pin_sda = 5
     pin_scl = 6
     disp_sla = 0x3c
+    i2c.setup(0,pin_sda, pin_scl, i2c.SLOW)
+    bmp085.setup()
 
     -- AUTREs
     IRD_PIN = 4
@@ -48,7 +49,7 @@ do
     -- TODO : ne plus utiliser cette technique!!!
     
     App.modules={ --"ds1820_reader.lua","DTH_reader.lua",
-        "BMP_reader",
+        --"BMP_reader",
         "433_switch",
         "i2c_display"
         }
@@ -57,7 +58,7 @@ do
     -- Params WIFI
     ------------------
     App.net = {
-            ssid = {"WIFI_THOME1",'WIFI_THOME2',"WIFI_THOME3"},
+            ssid = {'WIFI_THOME2'},
             password = "plus33324333562",
             wifi_time_retry = 10, -- minutes
             }
@@ -80,12 +81,12 @@ do
     App.mqtt_out_topics = {}
     App.mqtt_out_topics[App.mqtt.base_topic.."temperature"]={
                     message = function()
-                            return readBMP_temperature()
+                            return bmp085.temperature()/10
                         end,
                     qos = 0, retain = 0, callback = nil}
     App.mqtt_out_topics[App.mqtt.base_topic.."pression"]={
                     message = function()
-                            return readBMP_pressure()
+                            return bmp085.pressure()/100
                         end,
                     qos = 0, retain = 0, callback = nil}
     App.mqtt_out_topics[App.mqtt.base_topic.."luminosite"]={
@@ -115,7 +116,7 @@ do
                         end,
                 ["BLINK"]=function()
                             gpio.write(GREEN_LED_PIN,gpio.HIGH)
-                            tmr.alarm(6,500,tmr.ALARM_SINGLE, function()
+                            tmr.create():alarm(500,tmr.ALARM_SINGLE, function()
                                     gpio.write(GREEN_LED_PIN,gpio.LOW)
                                 end)
                         end}
