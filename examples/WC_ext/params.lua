@@ -13,87 +13,89 @@
 --    file, gpio, net, node,tmr, uart, wifi
 --    mqtt
 -------------------------------------------------
+local App = {}
+do
 
-LOGGER = false
+    App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes
+    App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
 
---------------------------------------
--- PARAMETRES CAPTEURS - ACTIONEURS
---------------------------------------
-LEDS_AIR = {1,2,3,4,5}
-LED_LIBRE = 6
-LED_OCCUPE = 7
+    
+    --------------------------------------
+    -- PARAMETRES CAPTEURS - ACTIONEURS
+    --------------------------------------
+    LEDS_AIR = {1,2,3,4,5}
+    LED_LIBRE = 6
+    LED_OCCUPE = 7
 
-for k, pin in pairs(LEDS_AIR) do 
-        gpio.mode(pin, gpio.OUTPUT)
-        gpio.write(pin,gpio.LOW)
-    end
-gpio.mode(LED_LIBRE, gpio.OUTPUT)
-gpio.mode(LED_OCCUPE, gpio.OUTPUT)
-gpio.write(LED_LIBRE,gpio.LOW)
-gpio.write(LED_OCCUPE,gpio.LOW)
+    -- Quelles les sont allumées seront entrée?
+    matrice = {
+        ["0"]={1,0,0,0,0},
+        ["1"]={0,1,0,0,0},
+        ["2"]={0,0,1,0,0},
+        ["3"]={0,0,1,1,0},
+        ["4"]={0,0,1,1,1}}
 
---------------------------------------
--- Modules a charger
---------------------------------------
-modules={}
---------------------------------------
--- Params WIFI 
---------------------------------------
-SSID = {"WIFI_THOME2",'WIFI_THOME1'}
-PASSWORD = "plus33324333562"
-HOST = "NODE-WC_EXT"
-wifi_time_retry = 10 -- minutes
+    for k, pin in pairs(LEDS_AIR) do 
+            gpio.mode(pin, gpio.OUTPUT)
+            gpio.write(pin,gpio.LOW)
+        end
+    gpio.mode(LED_LIBRE, gpio.OUTPUT)
+    gpio.mode(LED_OCCUPE, gpio.OUTPUT)
+    gpio.write(LED_LIBRE,gpio.LOW)
+    gpio.write(LED_OCCUPE,gpio.LOW)
+    
+    ------------------------------
+    -- Modules a charger
+    ------------------------------
+    App.modules={}
 
-----------------------------------------
--- Params MQTT
-----------------------------------------
-mqtt_host = "192.168.10.155"
-mqtt_port = 1883
-mqtt_user = "fredthx"
-mqtt_pass = "GaZoBu"
-mqtt_client_name = HOST
-mqtt_base_topic = "T-HOME/WC_EXT/"
-----------------------------------------
--- Messages MQTT sortants
-----------------------------------------
-mesure_period = 1*60 * 1000
-mqtt_out_topics = {}
+    ------------------
+    -- Params WIFI
+    ------------------
+    App.net = {
+            ssid = {'WIFI_THOME2'},
+            password = "plus33324333562",
+            wifi_time_retry = 10, -- minutes
+            }
 
--- Messages MQTT sortants sur test 
-test_period = 500
-mqtt_test_topics = {}
 
-----------------------------------------
--- Messages sur trigger GPIO
-----------------------------------------
-mqtt_trig_topics = {}
+    --------------------
+    -- Params MQTT
+    --------------------
+    App.mqtt = {
+        host = "192.168.10.155",
+        port = 1883,
+        --user = "fredthx",
+        --pass = "GaZoBu",
+        client_name = "NODE-WC_EXT",
+        base_topic = "T-HOME/WC_EXT/"
+    }
 
-----------------------------------------
--- Actions sur messages MQTT entrants
-----------------------------------------
-mqtt_in_topics = {}
+    -- Messages MQTT sortants
+    App.mesure_period = 10*60 * 1000
+    App.mqtt_out_topics = {}
+    -- Messages sur trigger GPIO
+    App.mqtt_trig_topics = {}
 
--- Quelles les sont allumées seront entrée?
-matrice = {
-    ["0"]={1,0,0,0,0},
-    ["1"]={0,1,0,0,0},
-    ["2"]={0,0,1,0,0},
-    ["3"]={0,0,1,1,0},
-    ["4"]={0,0,1,1,1}}
+    -- Actions sur messages MQTT entrants
+    App.mqtt_in_topics = {}
+    
+    App.mqtt_in_topics[App.mqtt.base_topic.."AIR"]=
+                function(data)
+                    for k, level in pairs(matrice[data]) do
+                            gpio.write(LEDS_AIR[k],level)
+                        end
+                end
+    
+    App.mqtt_in_topics[App.mqtt.base_topic.."ETAT"]={
+                ["LIBRE"] = function()
+                            gpio.write(LED_LIBRE, gpio.HIGH)
+                            gpio.write(LED_OCCUPE, gpio.LOW)
+                        end,
+                ["OCCUPE"] = function()
+                            gpio.write(LED_LIBRE, gpio.LOW)
+                            gpio.write(LED_OCCUPE, gpio.HIGH)
+                        end}
 
-mqtt_in_topics[mqtt_base_topic.."AIR"]=
-            function(data)
-                for k, level in pairs(matrice[data]) do
-                        gpio.write(LEDS_AIR[k],level)
-                    end
-            end
-
-mqtt_in_topics[mqtt_base_topic.."ETAT"]={
-            ["LIBRE"] = function()
-                        gpio.write(LED_LIBRE, gpio.HIGH)
-                        gpio.write(LED_OCCUPE, gpio.LOW)
-                    end,
-            ["OCCUPE"] = function()
-                        gpio.write(LED_LIBRE, gpio.LOW)
-                        gpio.write(LED_OCCUPE, gpio.HIGH)
-                    end}
+end
+return App
