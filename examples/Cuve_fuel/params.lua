@@ -94,12 +94,12 @@ do
                         end,
                 ["BLINK_ALWAYS"]=function()
                             led_alarm:alarm(500,tmr.ALARM_AUTO, function()
-                                    if led_alarm then
+                                    if led_state then
                                         gpio.write(RED_LED_PIN,gpio.LOW)
-                                        led_alarm = false
+                                        led_state = false
                                     else
                                         gpio.write(RED_LED_PIN,gpio.HIGH)
-                                        led_alarm = true
+                                        led_state = true
                                     end
                                 end)
                             end}
