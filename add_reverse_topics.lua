@@ -65,7 +65,7 @@ end
 if App.mqtt.base_topic then
 	-- pour executer du code via MQTT
     App.mqtt_in_topics[App.mqtt.base_topic.."_LUA"]= function(data)
-                   node.input(data)
+                   node.input(data.."\n")
                 end
     print_log(App.mqtt.base_topic.."_LUA created.")
 	-- pour tester si vivant
@@ -77,11 +77,18 @@ end
 
 -- fonction de redirection de l'interpreteur LUA
 -- usage : node.output(App.redirectLUA)
-function App.redirectLUA(str)
+function App.redirectLUA(opipe)
     local msg_debug = App.msg_debug
+    local str
     App.msg_debug = false
-    App.mqtt_publish(str, App.mqtt.base_topic.."_OUTPUT")
+    --stdout = opipe
+    str = opipe:read()
+    while str and #str > 0 do
+        App.mqtt_publish(str, App.mqtt.base_topic.."_OUTPUT")
+        str = opipe:read()
+    end
     App.msg_debug = msg_debug
+    return false
 end
 
 print_log('reverse mqtt topics : ok')
