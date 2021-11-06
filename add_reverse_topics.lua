@@ -70,8 +70,21 @@ if App.mqtt.base_topic then
     print_log(App.mqtt.base_topic.."_LUA created.")
 	-- pour tester si vivant
 	App.mqtt_in_topics[App.mqtt.base_topic.."_HELLO"]= function(data)
-				App.mqtt_publish(App.mqtt.client_name, App.mqtt.base_topic.."HELLO")
-			end
+            local payload
+            if sjson then
+                payload = {
+                    ip = wifi.sta.getip (),
+                    mac = wifi.sta.getmac(),
+                    client_name = App.client_name,
+                    mqtt_host = App.mqtt.host,
+                    wifi = wifi.sta.getconfig(true),
+                    heap = node.heap
+                }
+            else
+                payload = App.mqtt.client_name
+            end
+			App.mqtt_publish(payload, App.mqtt.base_topic.."HELLO")
+		end
     print_log(App.mqtt.base_topic.."_HELLO created.")
 end
 

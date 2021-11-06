@@ -59,12 +59,12 @@ if App.modules then
 end
 
 -- Fonction de publication des données (via mqtt et usb sérial)
-function App.mqtt_publish(rep,topic,action)
+function App.mqtt_publish(payload,topic,action)
             if not action then action = {} end
-            if type(rep)=="table" then rep = sjson.encode(rep) end
+            if type(payload)=="table" then payload = sjson.encode(payload) end
 			if App.mqtt.connected then
-                print_log("publish ".. topic.. "=>" ..rep)
-				if App.mqtt.client:publish(topic,rep,
+                print_log("publish ".. topic.. "=>" .. payload)
+				if App.mqtt.client:publish(topic,payload,
 									action.qos or 0,
 									action.retain or 0,
 									action.callback) then
@@ -77,7 +77,7 @@ function App.mqtt_publish(rep,topic,action)
 				end
 				collectgarbage()
 			end
-	        if action.usb then print(rep) end
+	        if action.usb then print(payload) end
     end
 
 -- 	Creation du timer pour lecture et envoie des App.mqtt_out_topics
