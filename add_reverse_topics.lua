@@ -75,7 +75,7 @@ if App.mqtt.base_topic then
                 payload = {
                     ip = wifi.sta.getip (),
                     mac = wifi.sta.getmac(),
-                    client_name = App.client_name,
+                    client_name = App.mqtt.client_name,
                     mqtt_host = App.mqtt.host,
                     wifi = wifi.sta.getconfig(true),
                     heap = node.heap

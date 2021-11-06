@@ -45,7 +45,7 @@ do
         user = "fredthx",
         pass = "GaZoBu",
         client_name = "NODE-THERM-BUREAU",
-        base_topic = "T-HOME/BUREAU/"
+        base_topic = "T-HOME/BUREAU/TEMP/"
     }
 
     local function read_temps(temps, callback)
