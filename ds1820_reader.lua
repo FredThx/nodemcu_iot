@@ -21,7 +21,7 @@
 --       0V   ------------ GRND
 --
 -- usage :
---  temps = dofile('ds1820_reader.lua') or .lc if compiled
+--  temps = require('ds1820_reader')
 --  temps.init(pin)
 --  temps.read(roms, function(result) print("temp :",result) end)
 --     ou roms :
