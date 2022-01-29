@@ -18,7 +18,7 @@
 local App = {}
 
 do
-    App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes
+    App.watchdog = {timeout = 5*60} -- set false or nil 30*60 = 30 minutes
     App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
     -- Relais
     RELAIS_PIN=6
@@ -27,7 +27,7 @@ do
     -- Led
     LED_PIN = 7
     gpio.mode(LED_PIN, gpio.OUTPUT)
-    gpio.write(LED_PIN, gpio.LOW)
+    gpio.write(LED_PIN, gpio.HIGH)--HIGH : led off!
     -- Bouton
     pin_bt = 3
     gpio.mode(pin_bt, gpio.INPUT)
@@ -36,7 +36,7 @@ do
     -- Params WIFI
     ------------------
     App.net = {
-            ssid = {'WIFI_THOME2',"WIFI_THOME1","WIFI_THOME3"},
+            ssid = {'WIFI_THOME2'},--,"WIFI_THOME3"},
             password = "plus33324333562",
             wifi_time_retry = 10, -- minutes
             }
@@ -58,7 +58,7 @@ do
     App.mqtt_out_topics = {}
     App.mqtt_out_topics[App.mqtt.base_topic.."ETAT"]={
                 message = function()
-                        if gpio.read(RELAIS_PIN)==gpio.LOW then
+                        if gpio.read(RELAIS_PIN)==gpio.HIGH then
                             return "ON"
                         else
                             return "OFF"
@@ -74,6 +74,13 @@ do
                     qos = 0, retain = 0, callback = nil,
                     message = function()
                             print("Bt pushed")
+                            if gpio.read(RELAIS_PIN)==gpio.HIGH then
+                                gpio.write(RELAIS_PIN,gpio.LOW)
+                                gpio.write(LED_PIN, gpio.HIGH)
+                            else
+                                gpio.write(RELAIS_PIN,gpio.HIGH)
+                                gpio.write(LED_PIN, gpio.LOW)
+                            end
                             return 1
                         end
                     }
@@ -105,17 +112,24 @@ do
                         end,
                 ["BLINK_ALWAYS"]=function()
                             led_alarm:alarm(500,tmr.ALARM_AUTO, function()
-                                    if led_alarm then
+                                    if led_on then
                                         gpio.write(LED_PIN,gpio.LOW)
-                                        led_alarm = false
+                                        led_on = false
                                     else
                                         gpio.write(LED_PIN,gpio.HIGH)
-                                        led_alarm = true
+                                        led_on = true
                                     end
                                 end)
                             end}
 
-
+-- At start
+    App.mqtt_in_topics[App.mqtt.base_topic.."LED"]['BLINK_ALWAYS']()
+    App.mqtt.on_connected = function()
+        App.mqtt_in_topics[App.mqtt.base_topic.."LED"]['OFF']()
+        end
+    App.mqtt.disconnected_callback = function()
+            App.mqtt_in_topics[App.mqtt.base_topic.."LED"]['BLINK_ALWAYS']()
+        end
 
 end
 return App

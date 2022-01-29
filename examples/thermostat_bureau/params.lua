@@ -23,9 +23,9 @@ do
     App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes
     App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
   
-    --CAPTEUR DS18B20
-    DS18B20_PIN = 4
-    ds18b20  = require('ds18b20')
+    --CAPTEUR DHT
+    DHT_pin = 4
+    
     
      ------------------
     -- Params WIFI
@@ -44,8 +44,8 @@ do
         port = 1883,
         user = "fredthx",
         pass = "GaZoBu",
-        client_name = "NODE-THERM-BUREAU",
-        base_topic = "T-HOME/BUREAU/TEMP/"
+        client_name = "NODE-BUREAUZ",
+        base_topic = "T-HOME/BUREAUZ/"
     }
 
     local function read_temps(temps, callback)
@@ -58,14 +58,11 @@ do
     App.mesure_period = 60 * 1000
     App.mqtt_out_topics = {}
     App.mqtt_out_topics[App.mqtt.base_topic.."temperature"]={
-                    result_on_callback = function(callback)
-                            print('read_temp...')
-                            ds18b20:read_temp(function(temps)
-                                                read_temps(temps,callback)
-                                             end,
-                                             DS18B20_PIN,
-                                             'C')
-                        end,
-                    qos = 0, retain = 0, callback = nil}
+                    message = function()
+                            local status,temp,humi = dht.read(DHT_pin)
+                            if status == 0 then
+                                return temp
+                             end
+                        end}
 end
 return App
