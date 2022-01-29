@@ -119,4 +119,5 @@ function on_wifi_connected()
     end
 end
 
+wifi.sta.clearconfig()
 _dofile("wifi")
