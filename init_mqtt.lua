@@ -54,8 +54,11 @@ function App.mqtt_connect()
     local on_connection = false
     mqtt_connect_alarm:alarm(1000, 1, function()
             if App.mqtt.connected then
-                print_log("MQTT Connected.")
+                print_log("MQTT Connected")
                 mqtt_connect_alarm:stop()
+                if App.mqtt.on_connected then
+                    pcall(App.mqtt.on_connected)
+                end
             else
                 print_log("MQTT Connection...")
                 if not on_connection then
