@@ -22,7 +22,7 @@ local App = {}
 
 do
     App.watchdog = {timeout = 30*60} -- set false or nil 30*60 = 30 minutes 
-    App.msg_debug = false -- if true : send messages (ex : "MQTT send : ok")
+    App.msg_debug = true -- if true : send messages (ex : "MQTT send : ok")
 
     -- Relais 
     pin_rel = 1
@@ -42,7 +42,7 @@ do
     -- Params WIFI 
     ------------------
     App.net = {
-            ssid = {"WIFI_THOME1",'WIFI_THOME2'},
+            ssid = {'WIFI_THOME2'},
             password = "plus33324333562",
             wifi_time_retry = 10, -- minutes
             }
@@ -53,8 +53,8 @@ do
     App.mqtt = {
         host = "192.168.10.155",
         port = 1883,
-        client_name = "NODE-SDBE-VMC",
-        base_topic = "T-HOME/SDBE/VMC/"
+        client_name = "NODE-SDBE-VMC2",
+        base_topic = "T-HOME/SDBE/VMC2/"
     }
     
     -- Messages MQTT sortants

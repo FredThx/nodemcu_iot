@@ -38,7 +38,7 @@ do
   -- Params WIFI
   ------------------
   App.net = {
-          ssid = {"WIFI_THOME1",'WIFI_THOME2'},
+          ssid = {"WIFI_THOME2",'WIFI_THOME3'},
           password = "plus33324333562",
           wifi_time_retry = 10, -- minutes
           }
